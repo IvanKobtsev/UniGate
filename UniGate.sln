@@ -1,6 +1,16 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniGateAPI", "UniGateAPI\UniGateAPI.csproj", "{0C48D182-C786-48E5-BA94-998E5E117570}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniGate.Core", "UniGate.Core\UniGate.Core.csproj", "{0C48D182-C786-48E5-BA94-998E5E117570}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniGate.AdminPanel", "UniGate.AdminPanel\UniGate.AdminPanel.csproj", "{B97B9BD5-0151-4EEC-ACA7-DB4987A7B064}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniGate.API", "UniGate.API\UniGate.API.csproj", "{9E6B00F3-61F2-44B1-A994-A723049100B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniGate.FileManagingService", "UniGate.FileManagingService\UniGate.FileManagingService.csproj", "{97819010-A745-43C6-9891-76AC76B41F9E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniGate.NotificationManagingService", "UniGate.NotificationManagingService\UniGate.NotificationManagingService.csproj", "{AE93FC97-E108-4B05-A09C-A581FFA2CC9C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniGate.AuthenticationService", "UniGate.AuthenticationService\UniGate.AuthenticationService.csproj", "{4113E3FC-EB30-4B4F-AB0F-7B8CC7507B5B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -12,5 +22,25 @@ Global
 		{0C48D182-C786-48E5-BA94-998E5E117570}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C48D182-C786-48E5-BA94-998E5E117570}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C48D182-C786-48E5-BA94-998E5E117570}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B97B9BD5-0151-4EEC-ACA7-DB4987A7B064}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B97B9BD5-0151-4EEC-ACA7-DB4987A7B064}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B97B9BD5-0151-4EEC-ACA7-DB4987A7B064}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B97B9BD5-0151-4EEC-ACA7-DB4987A7B064}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9E6B00F3-61F2-44B1-A994-A723049100B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9E6B00F3-61F2-44B1-A994-A723049100B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9E6B00F3-61F2-44B1-A994-A723049100B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9E6B00F3-61F2-44B1-A994-A723049100B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97819010-A745-43C6-9891-76AC76B41F9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97819010-A745-43C6-9891-76AC76B41F9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97819010-A745-43C6-9891-76AC76B41F9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97819010-A745-43C6-9891-76AC76B41F9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AE93FC97-E108-4B05-A09C-A581FFA2CC9C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AE93FC97-E108-4B05-A09C-A581FFA2CC9C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AE93FC97-E108-4B05-A09C-A581FFA2CC9C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AE93FC97-E108-4B05-A09C-A581FFA2CC9C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4113E3FC-EB30-4B4F-AB0F-7B8CC7507B5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4113E3FC-EB30-4B4F-AB0F-7B8CC7507B5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4113E3FC-EB30-4B4F-AB0F-7B8CC7507B5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4113E3FC-EB30-4B4F-AB0F-7B8CC7507B5B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
