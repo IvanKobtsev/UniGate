@@ -4,7 +4,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniGate.Core", "UniGate.Cor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniGate.AdminPanel", "UniGate.AdminPanel\UniGate.AdminPanel.csproj", "{B97B9BD5-0151-4EEC-ACA7-DB4987A7B064}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniGate.API", "UniGate.API\UniGate.API.csproj", "{9E6B00F3-61F2-44B1-A994-A723049100B0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniGate.APIGateway", "UniGate.APIGateway\UniGate.APIGateway.csproj", "{9E6B00F3-61F2-44B1-A994-A723049100B0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UniGate.FileManagingService", "UniGate.FileManagingService\UniGate.FileManagingService.csproj", "{97819010-A745-43C6-9891-76AC76B41F9E}"
 EndProject
