@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using UniGate.Common.Exceptions;
 using UniGate.UserService.DTOs.Common;
 using UniGate.UserService.DTOs.Requests;
+using UniGate.UserService.Enums;
 using UniGate.UserService.Interfaces;
 using UniGate.UserService.Mappers;
 using UniGate.UserService.Models;
@@ -24,7 +25,8 @@ public class UsersService(
             FirstName = registerDto.FirstName,
             LastName = registerDto.LastName,
             Patronymic = registerDto.Patronymic ?? string.Empty,
-            PhoneNumber = registerDto.PhoneNumber ?? string.Empty
+            PhoneNumber = registerDto.PhoneNumber ?? string.Empty,
+            Role = Role.Applicant
         };
 
         var result = await userManager.CreateAsync(user, registerDto.Password);
@@ -35,7 +37,7 @@ public class UsersService(
 
         if (createdUser == null) throw new InternalServerException("Something went wrong while creating user");
 
-        return await tokenService.GenerateTokens(createdUser.Id);
+        return await tokenService.GenerateTokens(createdUser.Id, createdUser.Role);
     }
 
     public async Task<ProfileDto> GetProfileDto(string userId)
@@ -52,7 +54,7 @@ public class UsersService(
         if (!await userManager.CheckPasswordAsync(foundUser, loginDto.Password))
             throw new ValidationException("Invalid credentials");
 
-        return await tokenService.GenerateTokens(foundUser.Id);
+        return await tokenService.GenerateTokens(foundUser.Id, foundUser.Role);
     }
 
     public async Task<TokenDto> RefreshToken(string refreshToken)
@@ -67,7 +69,7 @@ public class UsersService(
 
         return new TokenDto
         {
-            AccessToken = tokenService.GenerateAccessToken(user.Id),
+            AccessToken = tokenService.GenerateAccessToken(user.Id, user.Role),
             RefreshToken = refreshToken
         };
     }

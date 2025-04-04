@@ -9,5 +9,6 @@ public class EducationProgram
     public string Language { get; set; } = string.Empty;
     public string EducationForm { get; set; } = string.Empty;
     public required Faculty Faculty { get; set; }
-    public required EducationLevel EducationLevel { get; set; }
+    public Guid EducationLevelId { get; set; }
+    public EducationLevel EducationLevel { get; set; }
 }

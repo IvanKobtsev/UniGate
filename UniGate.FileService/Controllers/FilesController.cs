@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using UniGate.FileService.DTOs.Common;
+using UniGateAPI.DTOs.Request;
 
 namespace UniGate.FileService.Controllers;
 
@@ -13,21 +14,27 @@ public class FilesController : ControllerBase
         throw new NotImplementedException();
     }
 
-    // [HttpPost("files")]
-    // public Guid CreateFile([FromBody] CreateFileDto file)
-    // {
-    //     throw new NotImplementedException();
-    // }
-    //
-    // [HttpPut("files/{id:guid}")]
-    // public void UpdateFile(Guid id, [FromBody] UpdateFileDto file)
-    // {
-    //     throw new NotImplementedException();
-    // }
-    //
-    // [HttpDelete("files/{id:guid}")]
-    // public void DeleteFile(Guid id)
-    // {
-    //     throw new NotImplementedException();
-    // }
+    [HttpPost("documents/my")]
+    public void UploadFileAsApplicant([FromBody] UploadFileDto file)
+    {
+        throw new NotImplementedException();
+    }
+
+    [HttpPost("applicants/{applicantId:guid}/documents")]
+    public void UploadFileForApplicant(Guid applicantId, [FromBody] UploadFileDto file)
+    {
+        throw new NotImplementedException();
+    }
+
+    [HttpPut("documents/{id:guid}")]
+    public void UpdateDocument(Guid id)
+    {
+        throw new NotImplementedException();
+    }
+
+    [HttpDelete("documents/{id:guid}")]
+    public void DeleteDocument(Guid id)
+    {
+        throw new NotImplementedException();
+    }
 }

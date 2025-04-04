@@ -9,4 +9,5 @@ public class Admission
     public AdmissionStatus Status { get; set; }
     public required Applicant Applicant { get; set; }
     public List<ProgramPreference> ProgramPreferences { get; set; } = [];
+    public DateTime LastUpdateTime { get; set; }
 }

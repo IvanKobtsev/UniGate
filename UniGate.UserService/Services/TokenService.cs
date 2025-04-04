@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using UniGate.UserService.DTOs.Common;
+using UniGate.UserService.Enums;
 using UniGate.UserService.Interfaces;
 
 namespace UniGate.UserService.Services;
@@ -15,7 +16,23 @@ public class TokenService(IConfiguration config, ITokenStore tokenStore) : IToke
         return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
     }
 
-    public string GenerateAccessToken(string userId)
+    public async Task<TokenDto> GenerateTokens(string userId, Role userRole)
+    {
+        var tokenDto = new TokenDto
+        {
+            AccessToken = GenerateAccessToken(userId, userRole),
+            RefreshToken = GenerateRefreshToken()
+        };
+
+        await tokenStore.StoreRefreshTokenAsync(userId, tokenDto.RefreshToken,
+            TimeSpan.FromDays(int.Parse(config["JwtSettings:RefreshTokenExpiryDays"] ??
+                                        throw new InvalidOperationException(
+                                            "Jwt:Refresh token expiration is missing in configuration."))));
+
+        return tokenDto;
+    }
+
+    public string GenerateAccessToken(string userId, Role userRole)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtSettings:Secret"] ??
                                                                   throw new InvalidOperationException(
@@ -25,6 +42,7 @@ public class TokenService(IConfiguration config, ITokenStore tokenStore) : IToke
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, userId),
+            new("role", userRole.ToString()),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
@@ -36,21 +54,5 @@ public class TokenService(IConfiguration config, ITokenStore tokenStore) : IToke
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
-    }
-
-    public async Task<TokenDto> GenerateTokens(string userId)
-    {
-        var tokenDto = new TokenDto
-        {
-            AccessToken = GenerateAccessToken(userId),
-            RefreshToken = GenerateRefreshToken()
-        };
-
-        await tokenStore.StoreRefreshTokenAsync(userId, tokenDto.RefreshToken,
-            TimeSpan.FromDays(int.Parse(config["JwtSettings:RefreshTokenExpiryDays"] ??
-                                        throw new InvalidOperationException(
-                                            "Jwt:Refresh token expiration is missing in configuration."))));
-
-        return tokenDto;
     }
 }
