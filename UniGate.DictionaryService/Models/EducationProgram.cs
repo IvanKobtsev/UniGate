@@ -8,7 +8,8 @@ public class EducationProgram
     public string Code { get; set; } = string.Empty;
     public string Language { get; set; } = string.Empty;
     public string EducationForm { get; set; } = string.Empty;
-    public required Faculty Faculty { get; set; }
+    public Guid FacultyId { get; set; }
+    public Faculty Faculty { get; set; }
     public Guid EducationLevelId { get; set; }
     public EducationLevel EducationLevel { get; set; }
 }

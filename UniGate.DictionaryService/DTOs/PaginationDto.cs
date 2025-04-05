@@ -1,4 +1,4 @@
-namespace UniGate.DictionaryService.DTOs.Common;
+namespace UniGate.DictionaryService.DTOs;
 
 public class PaginationDto
 {

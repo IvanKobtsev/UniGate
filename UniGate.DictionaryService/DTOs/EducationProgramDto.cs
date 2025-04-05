@@ -1,4 +1,4 @@
-namespace UniGate.DictionaryService.DTOs.Response;
+namespace UniGate.DictionaryService.DTOs;
 
 public class EducationProgramDto
 {

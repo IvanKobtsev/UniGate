@@ -1,4 +1,4 @@
-using UniGate.DictionaryService.DTOs.Response;
+using UniGate.DictionaryService.DTOs;
 using UniGate.DictionaryService.Models;
 
 namespace UniGate.DictionaryService.Mappers;
@@ -17,7 +17,7 @@ public static class EducationLevelMapper
 
     public static List<EducationLevel> ToEducationLevels(this List<EducationLevelDto> educationLevelDtos)
     {
-        return educationLevelDtos.Select(dto => dto.ToEducationLevel()).ToList();
+        return educationLevelDtos.Select(ToEducationLevel).ToList();
     }
 
     public static EducationLevelDto ToDto(this EducationLevel educationLevel)
@@ -31,6 +31,6 @@ public static class EducationLevelMapper
 
     public static List<EducationLevelDto> ToDtos(this List<EducationLevel> educationLevels)
     {
-        return educationLevels.Select(el => el.ToDto()).ToList();
+        return educationLevels.Select(ToDto).ToList();
     }
 }

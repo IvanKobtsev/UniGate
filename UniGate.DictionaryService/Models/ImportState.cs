@@ -6,5 +6,7 @@ public class ImportState
 {
     public Guid Id { get; set; }
     public ImportStatus ImportStatus { get; set; }
-    public DateTime ImportDateTime { get; set; }
+    public ImportType ImportType { get; set; }
+    public DateTime ImportStartDateTime { get; set; }
+    public DateTime? ImportEndDateTime { get; set; }
 }
