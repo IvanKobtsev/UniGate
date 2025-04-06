@@ -1,6 +1,7 @@
 using StackExchange.Redis;
+using UniGate.Common.Enums;
+using UniGate.Common.Utilities;
 using UniGate.UserService.Interfaces;
-using ValidationException = UniGate.Common.Exceptions.ValidationException;
 
 namespace UniGate.UserService.Services;
 
@@ -14,23 +15,21 @@ public class RedisTokenStore(IConnectionMultiplexer redis) : ITokenStore
         await _db.HashSetAsync("userToRefresh", userId, refreshToken);
     }
 
-    public async Task RevokeRefreshTokenAsync(string userId)
-    {
-        var refreshToken = await _db.HashGetAsync("userToRefresh", userId);
-
-        if (!string.IsNullOrEmpty(refreshToken))
-        {
-            await _db.HashDeleteAsync("refreshToUser", refreshToken);
-            await _db.HashDeleteAsync("userToRefresh", userId);
-        }
-        else
-        {
-            throw new ValidationException("Either token is invalid or user is already logged out");
-        }
-    }
-
     public async Task<string?> GetUserIdByRefreshToken(string refreshToken)
     {
         return await _db.HashGetAsync("refreshToUser", refreshToken);
+    }
+
+    public async Task<Result> RevokeRefreshTokenAsync(string userId)
+    {
+        var refreshToken = await _db.HashGetAsync("userToRefresh", userId);
+
+        if (string.IsNullOrEmpty(refreshToken))
+            return new Result
+                { Code = HttpCode.BadRequest, Message = "Either token is invalid or user is already logged out" };
+
+        await _db.HashDeleteAsync("refreshToUser", refreshToken);
+        await _db.HashDeleteAsync("userToRefresh", userId);
+        return new Result();
     }
 }

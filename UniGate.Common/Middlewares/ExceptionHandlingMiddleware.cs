@@ -14,12 +14,12 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)
         {
             await next(context);
         }
-        catch (BaseException ex) // ✅ Custom exceptions
+        catch (BaseException ex)
         {
             Log.Warning("Handled exception: {Message} | Path: {Path}", ex.Message, context.Request.Path);
             await HandleExceptionAsync(context, ex.StatusCode, ex.Message);
         }
-        catch (Exception ex) // ✅ Unhandled exceptions
+        catch (Exception ex)
         {
             Log.Error(ex, "Unhandled exception occurred | Path: {Path}", context.Request.Path);
             await HandleExceptionAsync(context, (int)HttpStatusCode.InternalServerError,

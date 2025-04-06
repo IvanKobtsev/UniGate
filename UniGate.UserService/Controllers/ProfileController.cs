@@ -2,8 +2,6 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using UniGate.Common.Exceptions;
-using UniGate.UserService.DTOs.Common;
 using UniGate.UserService.DTOs.Requests;
 using UniGate.UserService.Interfaces;
 
@@ -17,12 +15,11 @@ public class ProfileController(IUsersService usersService)
     [Authorize]
     [HttpGet("")]
     [SwaggerOperation(Summary = "Get current user's profile data")]
-    public async Task<ProfileDto> GetProfile()
+    public async Task<IActionResult> GetProfile()
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
-                     throw new UnauthorizedException("Unauthorized");
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        return await usersService.GetProfileDto(userId);
+        return userId == null ? Unauthorized() : (await usersService.GetProfileDto(userId)).GetActionResult();
     }
 
     [Authorize]
@@ -30,12 +27,11 @@ public class ProfileController(IUsersService usersService)
     [SwaggerOperation(Summary = "Update current user's profile data")]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto profileDto)
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
-                     throw new UnauthorizedException("Unauthorized");
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        await usersService.UpdateProfile(userId, profileDto);
-
-        return Ok();
+        return userId == null
+            ? Unauthorized()
+            : (await usersService.UpdateProfile(userId, profileDto)).GetActionResult();
     }
 
     [Authorize]
@@ -46,11 +42,10 @@ public class ProfileController(IUsersService usersService)
         if (updatePasswordDto.NewPassword == updatePasswordDto.CurrentPassword)
             return BadRequest("New password must be different from current");
 
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
-                     throw new UnauthorizedException("Unauthorized");
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        await usersService.UpdatePassword(userId, updatePasswordDto);
-
-        return Ok();
+        return userId == null
+            ? Unauthorized()
+            : (await usersService.UpdatePassword(userId, updatePasswordDto)).GetActionResult();
     }
 }

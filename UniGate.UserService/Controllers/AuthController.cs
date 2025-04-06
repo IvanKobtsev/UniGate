@@ -2,7 +2,6 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using UniGate.Common.Exceptions;
 using UniGate.UserService.DTOs.Requests;
 using UniGate.UserService.Interfaces;
 
@@ -17,14 +16,14 @@ public class AuthController(IUsersService usersService, ITokenStore tokenStore)
     [SwaggerOperation(Summary = "User login")]
     public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
     {
-        return Ok(await usersService.Login(loginDto));
+        return (await usersService.Login(loginDto)).GetActionResult();
     }
 
     [HttpPost("register")]
     [SwaggerOperation(Summary = "User registration")]
     public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
     {
-        return Ok(await usersService.Register(registerDto));
+        return (await usersService.Register(registerDto)).GetActionResult();
     }
 
     [Authorize]
@@ -32,18 +31,15 @@ public class AuthController(IUsersService usersService, ITokenStore tokenStore)
     [SwaggerOperation(Summary = "User logout")]
     public async Task<IActionResult> Logout()
     {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
-                     throw new NotFoundException("User ID not found in claims.");
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        await tokenStore.RevokeRefreshTokenAsync(userId);
-
-        return Ok();
+        return userId == null ? Unauthorized() : (await tokenStore.RevokeRefreshTokenAsync(userId)).GetActionResult();
     }
 
     [HttpPost("refresh")]
     [SwaggerOperation(Summary = "Refresh access token")]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenDto refreshTokenDto)
     {
-        return Ok(await usersService.RefreshToken(refreshTokenDto.Token));
+        return (await usersService.RefreshToken(refreshTokenDto.Token)).GetActionResult();
     }
 }

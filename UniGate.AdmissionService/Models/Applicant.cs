@@ -8,12 +8,6 @@ public class Applicant
     public Guid Id { get; set; }
     public DateTime CreateTime { get; set; }
 
-    [MinLength(1)] [MaxLength(255)] public required string FirstName { get; set; }
-
-    [MinLength(1)] [MaxLength(255)] public required string LastName { get; set; }
-
-    [MinLength(1)] [MaxLength(255)] public string? Patronymic { get; set; }
-
     [MinLength(1)] [MaxLength(255)] public required string Email { get; set; }
 
     public DateOnly BirthDate { get; set; }

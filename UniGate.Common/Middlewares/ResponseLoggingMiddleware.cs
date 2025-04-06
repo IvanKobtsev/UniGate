@@ -16,7 +16,7 @@ public class ResponseLoggingMiddleware(RequestDelegate next)
         {
             await next(context);
             var responseBody = await ReadResponseBody(context);
-            Log.Information("Response: {StatusCode} {Path} | Body: {Body}",
+            Log.Information("Result: {StatusCode} {Path} | Body: {Body}",
                 context.Response.StatusCode, context.Request.Path, responseBody);
         }
         finally

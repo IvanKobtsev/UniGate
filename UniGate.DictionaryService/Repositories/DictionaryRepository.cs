@@ -101,25 +101,8 @@ public class DictionaryRepository(ApplicationDbContext dbContext) : IDictionaryR
         await dbContext.EducationLevelAccesses.AddRangeAsync(educationLevelAccess);
     }
 
-    public async Task<List<EducationLevelDto>> RetrieveEducationLevels()
-    {
-        return (await dbContext.EducationLevels.AsNoTracking().OrderBy(el => el.EducationLevelId).ToListAsync())
-            .ToDtos();
-    }
-
-    public async Task<List<EducationDocumentTypeDto>> RetrieveEducationDocumentTypes()
-    {
-        var educationLevelsInts = await dbContext.EducationLevels.AsNoTracking()
-            .ToDictionaryAsync(el => el.Id, el => el.EducationLevelId);
-
-        return (await dbContext.EducationDocumentTypes.AsNoTracking().Include(edt => edt.EducationLevel)
-            .Include(edt => edt.NextEducationLevels)
-            .ThenInclude(ela => ela.EducationLevel).AsSplitQuery()
-            .OrderBy(edt => edt.Name).ToListAsync()).ToDtos(educationLevelsInts);
-    }
-
     public async Task<EducationProgramsDto> RetrieveEducationPrograms(int currentPage = 1, int pageSize = 10,
-        Guid? facultyId = null, Guid? educationLevelId = null, string? educationForm = null, string? language = null,
+        Guid? facultyId = null, int? educationLevelId = null, string? educationForm = null, string? language = null,
         string? programSearch = null)
     {
         var query = dbContext.EducationPrograms.AsNoTracking()
@@ -128,11 +111,12 @@ public class DictionaryRepository(ApplicationDbContext dbContext) : IDictionaryR
             .AsSplitQuery();
 
         if (facultyId != null) query = query.Where(ep => ep.Faculty.Id == facultyId);
-        if (educationLevelId != null) query = query.Where(ep => ep.EducationLevelId == educationLevelId);
+        if (educationLevelId != null) query = query.Where(ep => ep.EducationLevel.EducationLevelId == educationLevelId);
         if (!string.IsNullOrEmpty(educationForm)) query = query.Where(ep => ep.EducationForm == educationForm);
         if (!string.IsNullOrEmpty(language)) query = query.Where(ep => ep.Language == language);
         if (!string.IsNullOrEmpty(programSearch))
-            query = query.Where(ep => ep.Name.ToLower().Contains(programSearch.ToLower()));
+            query = query.Where(ep =>
+                ep.Name.ToLower().Contains(programSearch.ToLower()) || ep.Code.Contains(programSearch));
 
         var totalCount = await query.CountAsync();
 
@@ -145,17 +129,12 @@ public class DictionaryRepository(ApplicationDbContext dbContext) : IDictionaryR
         {
             Pagination = new PaginationDto
             {
-                Count = totalCount,
+                Count = totalCount % pageSize == 0 ? totalCount / pageSize : totalCount / pageSize + 1,
                 Current = currentPage,
                 Size = pageSize
             },
             Programs = items.ToDtos()
         };
-    }
-
-    public async Task<List<FacultyDto>> RetrieveFaculties()
-    {
-        return (await dbContext.Faculties.AsNoTracking().OrderBy(f => f.Name).ToListAsync()).ToDtos();
     }
 
     public async Task<Guid> StartImport(ImportType importType)
@@ -207,6 +186,28 @@ public class DictionaryRepository(ApplicationDbContext dbContext) : IDictionaryR
     {
         return (await dbContext.ImportStates.AsNoTracking().OrderByDescending(i => i.ImportStartDateTime)
             .FirstOrDefaultAsync())?.ToDto();
+    }
+
+    public async Task<List<EducationLevelDto>> RetrieveEducationLevels()
+    {
+        return (await dbContext.EducationLevels.AsNoTracking().OrderBy(el => el.EducationLevelId).ToListAsync())
+            .ToDtos();
+    }
+
+    public async Task<List<EducationDocumentTypeDto>> RetrieveEducationDocumentTypes()
+    {
+        var educationLevelsInts = await dbContext.EducationLevels.AsNoTracking()
+            .ToDictionaryAsync(el => el.Id, el => el.EducationLevelId);
+
+        return (await dbContext.EducationDocumentTypes.AsNoTracking().Include(edt => edt.EducationLevel)
+            .Include(edt => edt.NextEducationLevels)
+            .ThenInclude(ela => ela.EducationLevel).AsSplitQuery()
+            .OrderBy(edt => edt.Name).ToListAsync()).ToDtos(educationLevelsInts);
+    }
+
+    public async Task<List<FacultyDto>> RetrieveFaculties()
+    {
+        return (await dbContext.Faculties.AsNoTracking().OrderBy(f => f.Name).ToListAsync()).ToDtos();
     }
 
     public async Task StoreEducationLevelAccesses(List<EducationLevelAccessDto> educationLevelAccessDtos)

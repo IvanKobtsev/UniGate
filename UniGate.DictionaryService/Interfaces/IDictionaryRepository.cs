@@ -13,7 +13,7 @@ public interface IDictionaryRepository
     public Task<List<EducationDocumentTypeDto>> RetrieveEducationDocumentTypes();
 
     public Task<EducationProgramsDto> RetrieveEducationPrograms(int currentPage = 1, int pageSize = 10,
-        Guid? facultyId = null, Guid? educationLevelId = null, string? educationForm = null, string? language = null,
+        Guid? facultyId = null, int? educationLevelId = null, string? educationForm = null, string? language = null,
         string? programSearch = null);
 
     public Task<List<FacultyDto>> RetrieveFaculties();

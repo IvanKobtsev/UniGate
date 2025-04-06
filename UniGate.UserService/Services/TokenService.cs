@@ -47,10 +47,16 @@ public class TokenService(IConfiguration config, ITokenStore tokenStore) : IToke
         };
 
         var token = new JwtSecurityToken(
-            config["JwtSettings:Issuer"],
-            config["JwtSettings:Audience"],
+            config["JwtSettings:Issuer"] ??
+            throw new InvalidOperationException(
+                "Jwt:Secret is missing in configuration."),
+            config["JwtSettings:Audience"] ??
+            throw new InvalidOperationException(
+                "Jwt:Secret is missing in configuration."),
             claims,
-            expires: DateTime.Now.AddMinutes(Convert.ToDouble(config["JwtSettings:AccessTokenExpiryMinutes"])),
+            expires: DateTime.Now.AddMinutes(Convert.ToDouble(config["JwtSettings:AccessTokenExpiryMinutes"] ??
+                                                              throw new InvalidOperationException(
+                                                                  "Jwt:Expiry time for access token is missing in configuration."))),
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);

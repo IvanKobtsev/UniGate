@@ -21,7 +21,7 @@ public class DictionaryService(IDictionaryRepository dictionaryRepository) : IDi
     }
 
     public Task<EducationProgramsDto> GetEducationPrograms(int currentPage = 1, int pageSize = 10,
-        Guid? facultyId = null, Guid? educationLevelId = null, string? educationForm = null, string? language = null,
+        Guid? facultyId = null, int? educationLevelId = null, string? educationForm = null, string? language = null,
         string? programSearch = null)
     {
         return dictionaryRepository.RetrieveEducationPrograms(currentPage, pageSize, facultyId, educationLevelId,

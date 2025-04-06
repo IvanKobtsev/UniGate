@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
-using UniGate.Common.Exceptions;
+using UniGate.Common.Enums;
+using UniGate.Common.Utilities;
 using UniGate.UserService.DTOs.Common;
 using UniGate.UserService.DTOs.Requests;
 using UniGate.UserService.Enums;
@@ -16,7 +17,7 @@ public class UsersService(
     IUsersRepository usersRepository)
     : IUsersService
 {
-    public async Task<TokenDto> Register(RegisterDto registerDto)
+    public async Task<Result<TokenDto>> Register(RegisterDto registerDto)
     {
         var user = new User
         {
@@ -31,54 +32,36 @@ public class UsersService(
 
         var result = await userManager.CreateAsync(user, registerDto.Password);
 
-        if (!result.Succeeded) throw new ValidationException(result.Errors.First().Description);
+        if (!result.Succeeded)
+            return new Result<TokenDto> { Code = HttpCode.BadRequest, Message = result.Errors.First().Description };
 
         var createdUser = await userManager.FindByEmailAsync(registerDto.Email);
 
-        if (createdUser == null) throw new InternalServerException("Something went wrong while creating user");
-
-        return await tokenService.GenerateTokens(createdUser.Id, createdUser.Role);
+        return createdUser == null
+            ? new Result<TokenDto> { Code = HttpCode.BadRequest, Message = "Something went wrong while creating user" }
+            : new Result<TokenDto> { Data = await tokenService.GenerateTokens(createdUser.Id, createdUser.Role) };
     }
 
-    public async Task<ProfileDto> GetProfileDto(string userId)
-    {
-        return (await usersRepository.GetUser(userId)).ToDto();
-    }
-
-    public async Task<TokenDto> Login(LoginDto loginDto)
-    {
-        var foundUser = await userManager.FindByEmailAsync(loginDto.Email);
-
-        if (foundUser == null) throw new NotFoundException("Invalid credentials");
-
-        if (!await userManager.CheckPasswordAsync(foundUser, loginDto.Password))
-            throw new ValidationException("Invalid credentials");
-
-        return await tokenService.GenerateTokens(foundUser.Id, foundUser.Role);
-    }
-
-    public async Task<TokenDto> RefreshToken(string refreshToken)
-    {
-        var userId = await tokenStore.GetUserIdByRefreshToken(refreshToken);
-
-        if (userId == null) throw new NotFoundException("Invalid refresh token");
-
-        var user = await userManager.FindByIdAsync(userId);
-
-        if (user == null) throw new NotFoundException("Invalid refresh token");
-
-        return new TokenDto
-        {
-            AccessToken = tokenService.GenerateAccessToken(user.Id, user.Role),
-            RefreshToken = refreshToken
-        };
-    }
-
-    public async Task UpdateProfile(string userId, UpdateProfileDto updateProfileDto)
+    public async Task<Result> UpdatePassword(string userId, UpdatePasswordDto updatePasswordDto)
     {
         var user = await userManager.FindByIdAsync(userId);
 
-        if (user == null) throw new NotFoundException("User not found");
+        if (user == null) return new Result { Code = HttpCode.NotFound, Message = "User not found" };
+
+        var result =
+            await userManager.ChangePasswordAsync(user, updatePasswordDto.CurrentPassword,
+                updatePasswordDto.NewPassword);
+
+        return !result.Succeeded
+            ? new Result { Code = HttpCode.BadRequest, Message = result.Errors.First().Description }
+            : new Result();
+    }
+
+    public async Task<Result> UpdateProfile(string userId, UpdateProfileDto updateProfileDto)
+    {
+        var user = await userManager.FindByIdAsync(userId);
+
+        if (user == null) return new Result { Code = HttpCode.NotFound, Message = "User not found" };
 
         user.UserName = updateProfileDto.Email;
         user.Email = updateProfileDto.Email;
@@ -89,19 +72,51 @@ public class UsersService(
 
         var result = await userManager.UpdateAsync(user);
 
-        if (!result.Succeeded) throw new ValidationException(result.Errors.First().Description);
+        return !result.Succeeded
+            ? new Result { Code = HttpCode.BadRequest, Message = result.Errors.First().Description }
+            : new Result();
     }
 
-    public async Task UpdatePassword(string userId, UpdatePasswordDto updatePasswordDto)
+    public async Task<Result<ProfileDto>> GetProfileDto(string userId)
     {
+        var profileDto = (await usersRepository.GetUser(userId))?.ToDto();
+
+        return profileDto == null
+            ? new Result<ProfileDto> { Message = "User not found", Code = HttpCode.NotFound }
+            : new Result<ProfileDto> { Data = profileDto };
+    }
+
+    public async Task<Result<TokenDto>> Login(LoginDto loginDto)
+    {
+        var foundUser = await userManager.FindByEmailAsync(loginDto.Email);
+
+        if (foundUser == null)
+            return new Result<TokenDto> { Message = "Invalid credentials", Code = HttpCode.BadRequest };
+
+        if (!await userManager.CheckPasswordAsync(foundUser, loginDto.Password))
+            return new Result<TokenDto> { Message = "Invalid credentials", Code = HttpCode.BadRequest };
+
+        return new Result<TokenDto> { Data = await tokenService.GenerateTokens(foundUser.Id, foundUser.Role) };
+    }
+
+    public async Task<Result<TokenDto>> RefreshToken(string refreshToken)
+    {
+        var userId = await tokenStore.GetUserIdByRefreshToken(refreshToken);
+
+        if (userId == null)
+            return new Result<TokenDto> { Code = HttpCode.BadRequest, Message = "Invalid refresh token" };
+
         var user = await userManager.FindByIdAsync(userId);
 
-        if (user == null) throw new NotFoundException("User not found");
+        if (user == null) return new Result<TokenDto> { Message = "Invalid refresh token", Code = HttpCode.NotFound };
 
-        var result =
-            await userManager.ChangePasswordAsync(user, updatePasswordDto.CurrentPassword,
-                updatePasswordDto.NewPassword);
-
-        if (!result.Succeeded) throw new ValidationException(result.Errors.First().Description);
+        return new Result<TokenDto>
+        {
+            Data = new TokenDto
+            {
+                AccessToken = tokenService.GenerateAccessToken(user.Id, user.Role),
+                RefreshToken = refreshToken
+            }
+        };
     }
 }
