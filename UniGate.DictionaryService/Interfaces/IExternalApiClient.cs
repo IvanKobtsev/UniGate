@@ -7,5 +7,5 @@ public interface IExternalApiClient
     public Task<List<EducationLevelDto>> ImportEducationLevelsAsync();
     public Task<List<FacultyDto>> ImportFacultiesAsync();
     public Task<List<EducationDocumentTypeDto>> ImportEducationDocumentTypesAsync();
-    public Task<EducationProgramsDto> ImportEducationProgramsAsync(int page = 1);
+    public Task<EducationProgramsPagedListDto> ImportEducationProgramsAsync(int page = 1);
 }

@@ -1,12 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using UniGateAPI.DTOs;
 using UniGateAPI.DTOs.Request;
 
 namespace UniGateAPI.Controllers;
 
 [ApiController]
-[Route("api")]
+[Route("api/v1")]
 public class ProgramsController : ControllerBase
 {
     [HttpPost("programs/{id:guid}/apply")]

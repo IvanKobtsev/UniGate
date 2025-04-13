@@ -2,6 +2,7 @@ using UniGate.Common.Exceptions;
 using UniGate.DictionaryService.DTOs;
 using UniGate.DictionaryService.Enums;
 using UniGate.DictionaryService.Interfaces;
+using UniGate.DictionaryService.Mappers;
 
 namespace UniGate.DictionaryService.Services;
 
@@ -13,19 +14,22 @@ public class ImportService(IExternalApiClient apiClient, IDictionaryRepository d
 
         var newImportId = await dictionaryRepository.StartImport(importType);
 
+        var educationLevelsDictionary = await dictionaryRepository.GetEducationLevelsIntToGuidDictionary();
+
         try
         {
             var educationLevelDtos = await apiClient.ImportEducationLevelsAsync();
 
-            await dictionaryRepository.StoreEducationLevels(educationLevelDtos);
+            await dictionaryRepository.StoreEducationLevels(educationLevelDtos.ToEducationLevels());
 
             var facultyDtos = await apiClient.ImportFacultiesAsync();
 
-            await dictionaryRepository.StoreFaculties(facultyDtos);
+            await dictionaryRepository.StoreFaculties(facultyDtos.ToFaculties());
 
             var educationDocumentTypeDtos = await apiClient.ImportEducationDocumentTypesAsync();
 
-            await dictionaryRepository.StoreEducationDocumentTypes(educationDocumentTypeDtos);
+            await dictionaryRepository.StoreEducationDocumentTypes(educationDocumentTypeDtos
+                .ToEducationDocumentTypes(educationLevelsDictionary));
 
             var educationProgramsPaginatedList = await apiClient.ImportEducationProgramsAsync();
             var educationProgramsDtos = educationProgramsPaginatedList.Programs;
@@ -38,15 +42,16 @@ public class ImportService(IExternalApiClient apiClient, IDictionaryRepository d
             } while (educationProgramsPaginatedList.Pagination.Current <
                      educationProgramsPaginatedList.Pagination.Count);
 
-            await dictionaryRepository.StoreEducationPrograms(educationProgramsDtos);
+            await dictionaryRepository.StoreEducationPrograms(
+                educationProgramsDtos.ToEducationPrograms(educationLevelsDictionary));
 
             await dictionaryRepository.FinishImport(newImportId, ImportStatus.Succeeded);
         }
-        catch (ServiceUnavailableException exception)
+        catch (NotFoundException exception)
         {
             await dictionaryRepository.FinishImport(newImportId, ImportStatus.Failed);
 
-            throw new ServiceUnavailableException("Import failed: service responded with null");
+            throw;
         }
         catch (Exception exception)
         {
@@ -58,17 +63,17 @@ public class ImportService(IExternalApiClient apiClient, IDictionaryRepository d
 
     public async Task<List<ImportStateDto>> GetImportHistory()
     {
-        return await dictionaryRepository.RetrieveImportStates();
+        return (await dictionaryRepository.GetImportStates()).ToDtos();
     }
 
     public async Task<ImportStateDto?> GetImportStatus()
     {
-        return await dictionaryRepository.RetrieveLastImportState();
+        return (await dictionaryRepository.GetLastImportState())?.ToDto();
     }
 
     public async Task<bool> IsImporting()
     {
-        var lastImportState = await dictionaryRepository.RetrieveLastImportState();
+        var lastImportState = await dictionaryRepository.GetLastImportState();
 
         return lastImportState is { ImportStatus: ImportStatus.Importing };
     }

@@ -8,22 +8,24 @@ using UniGate.UserService.Interfaces;
 namespace UniGate.UserService.Controllers;
 
 [ApiController]
-[Route("/api/profile")]
-public class ProfileController(IUsersService usersService)
+[Route("/api/v1/users")]
+public class UserController(IUserService userService)
     : ControllerBase
 {
     [Authorize]
-    [HttpGet("")]
+    [HttpGet("me")]
     [SwaggerOperation(Summary = "Get current user's profile data")]
     public async Task<IActionResult> GetProfile()
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-        return userId == null ? Unauthorized() : (await usersService.GetProfileDto(userId)).GetActionResult();
+        return userId == null
+            ? Unauthorized()
+            : (await userService.GetProfileDto(Guid.Parse(userId))).GetActionResult();
     }
 
     [Authorize]
-    [HttpPut("")]
+    [HttpPut("me")]
     [SwaggerOperation(Summary = "Update current user's profile data")]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto profileDto)
     {
@@ -31,12 +33,12 @@ public class ProfileController(IUsersService usersService)
 
         return userId == null
             ? Unauthorized()
-            : (await usersService.UpdateProfile(userId, profileDto)).GetActionResult();
+            : (await userService.UpdateProfile(Guid.Parse(userId), profileDto)).GetActionResult();
     }
 
     [Authorize]
-    [HttpPut("password")]
-    [SwaggerOperation(Summary = "Send a request to update a password")]
+    [HttpPut("me/password")]
+    [SwaggerOperation(Summary = "Update current user's password")]
     public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordDto updatePasswordDto)
     {
         if (updatePasswordDto.NewPassword == updatePasswordDto.CurrentPassword)
@@ -46,6 +48,14 @@ public class ProfileController(IUsersService usersService)
 
         return userId == null
             ? Unauthorized()
-            : (await usersService.UpdatePassword(userId, updatePasswordDto)).GetActionResult();
+            : (await userService.UpdatePassword(Guid.Parse(userId), updatePasswordDto)).GetActionResult();
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("{id:guid}")]
+    [SwaggerOperation(Summary = "Update user's profile by id")]
+    public async Task<IActionResult> UpdateManager(Guid id, [FromBody] UpdateProfileDto profileDto)
+    {
+        return (await userService.UpdateProfile(id, profileDto)).GetActionResult();
     }
 }

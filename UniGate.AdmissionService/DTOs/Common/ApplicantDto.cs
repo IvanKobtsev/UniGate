@@ -1,5 +1,4 @@
-using UniGateAPI.Enums;
-using UniGateAPI.Models;
+using UniGate.Common.Enums;
 
 namespace UniGateAPI.DTOs;
 

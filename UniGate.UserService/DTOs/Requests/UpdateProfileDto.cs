@@ -10,5 +10,8 @@ public class UpdateProfileDto
 
     [EmailAddress] public string Email { get; set; } = string.Empty;
 
+    [Phone]
+    [MinLength(11)]
+    [MaxLength(11)]
     public string PhoneNumber { get; set; } = string.Empty;
 }

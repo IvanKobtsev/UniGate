@@ -27,7 +27,7 @@ public class ExternalApiClient : IExternalApiClient
             await _http.GetFromJsonAsync<List<EducationLevelDto>>(
                 "/api/dictionary/education_levels");
 
-        if (response == null) throw new ServiceUnavailableException("Cannot import data");
+        if (response == null) throw new NotFoundException("Import failed: service responded with null");
 
         return response;
     }
@@ -38,7 +38,7 @@ public class ExternalApiClient : IExternalApiClient
             await _http.GetFromJsonAsync<List<FacultyDto>>(
                 "/api/dictionary/faculties");
 
-        if (response == null) throw new ServiceUnavailableException("Cannot import data");
+        if (response == null) throw new NotFoundException("Import failed: service responded with null");
 
         return response;
     }
@@ -49,18 +49,18 @@ public class ExternalApiClient : IExternalApiClient
             await _http.GetFromJsonAsync<List<EducationDocumentTypeDto>>(
                 "/api/dictionary/document_types");
 
-        if (response == null) throw new ServiceUnavailableException("Cannot import data");
+        if (response == null) throw new NotFoundException("Import failed: service responded with null");
 
         return response;
     }
 
-    public async Task<EducationProgramsDto> ImportEducationProgramsAsync(int page = 1)
+    public async Task<EducationProgramsPagedListDto> ImportEducationProgramsAsync(int page = 1)
     {
         var response =
-            await _http.GetFromJsonAsync<EducationProgramsDto>(
+            await _http.GetFromJsonAsync<EducationProgramsPagedListDto>(
                 "/api/dictionary/programs?page=" + page + "&size=" + _options.PaginationDivision);
 
-        if (response == null) throw new ServiceUnavailableException("Cannot import data");
+        if (response == null) throw new NotFoundException("Import failed: service responded with null");
 
         return response;
     }

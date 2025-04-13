@@ -1,4 +1,4 @@
-using UniGateAPI.Enums;
+using UniGate.Common.Enums;
 
 namespace UniGateAPI.DTOs.Request;
 

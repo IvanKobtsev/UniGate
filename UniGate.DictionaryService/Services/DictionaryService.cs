@@ -1,30 +1,46 @@
+using UniGate.Common.DTOs;
 using UniGate.DictionaryService.DTOs;
 using UniGate.DictionaryService.Interfaces;
+using UniGate.DictionaryService.Mappers;
 
 namespace UniGate.DictionaryService.Services;
 
 public class DictionaryService(IDictionaryRepository dictionaryRepository) : IDictionaryService
 {
-    public Task<List<EducationLevelDto>> GetEducationLevels()
+    public async Task<List<EducationLevelDto>> GetEducationLevels()
     {
-        return dictionaryRepository.RetrieveEducationLevels();
+        return (await dictionaryRepository.GetEducationLevels()).ToDtos();
     }
 
-    public Task<List<EducationDocumentTypeDto>> GetEducationDocumentTypes()
+    public async Task<List<EducationDocumentTypeDto>> GetEducationDocumentTypes()
     {
-        return dictionaryRepository.RetrieveEducationDocumentTypes();
+        var educationLevelsDictionary = await dictionaryRepository.GetEducationLevelsGuidToIntDictionary();
+
+        return (await dictionaryRepository.GetEducationDocumentTypes()).ToDtos(educationLevelsDictionary);
     }
 
-    public Task<List<FacultyDto>> GetFaculties()
+    public async Task<List<FacultyDto>> GetFaculties()
     {
-        return dictionaryRepository.RetrieveFaculties();
+        return (await dictionaryRepository.GetFaculties()).ToDtos();
     }
 
-    public Task<EducationProgramsDto> GetEducationPrograms(int currentPage = 1, int pageSize = 10,
+    public async Task<EducationProgramsPagedListDto> GetEducationPrograms(int currentPage = 1, int pageSize = 10,
         Guid? facultyId = null, int? educationLevelId = null, string? educationForm = null, string? language = null,
         string? programSearch = null)
     {
-        return dictionaryRepository.RetrieveEducationPrograms(currentPage, pageSize, facultyId, educationLevelId,
+        var paginatedList = await dictionaryRepository.GetPaginatedEducationPrograms(currentPage, pageSize, facultyId,
+            educationLevelId,
             educationForm, language, programSearch);
+
+        return new EducationProgramsPagedListDto
+        {
+            Pagination = new PaginationDto
+            {
+                Count = paginatedList.PagesCount,
+                Current = paginatedList.PageIndex,
+                Size = paginatedList.PageSize
+            },
+            Programs = paginatedList.Items.ToDtos()
+        };
     }
 }

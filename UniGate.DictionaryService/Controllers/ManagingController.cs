@@ -6,7 +6,7 @@ using UniGate.DictionaryService.Interfaces;
 namespace UniGate.DictionaryService.Controllers;
 
 [ApiController]
-[Route("api/dictionary")]
+[Route("api/v1/dictionary")]
 public class ManagingController(
     IJobService jobService,
     IImportService importService,

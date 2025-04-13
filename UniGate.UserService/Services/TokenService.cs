@@ -4,7 +4,6 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using UniGate.UserService.DTOs.Common;
-using UniGate.UserService.Enums;
 using UniGate.UserService.Interfaces;
 
 namespace UniGate.UserService.Services;
@@ -16,7 +15,7 @@ public class TokenService(IConfiguration config, ITokenStore tokenStore) : IToke
         return Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
     }
 
-    public async Task<TokenDto> GenerateTokens(string userId, Role userRole)
+    public async Task<TokenDto> GenerateTokens(Guid userId, List<string> userRole)
     {
         var tokenDto = new TokenDto
         {
@@ -24,7 +23,7 @@ public class TokenService(IConfiguration config, ITokenStore tokenStore) : IToke
             RefreshToken = GenerateRefreshToken()
         };
 
-        await tokenStore.StoreRefreshTokenAsync(userId, tokenDto.RefreshToken,
+        await tokenStore.StoreRefreshTokenAsync(userId.ToString(), tokenDto.RefreshToken,
             TimeSpan.FromDays(int.Parse(config["JwtSettings:RefreshTokenExpiryDays"] ??
                                         throw new InvalidOperationException(
                                             "Jwt:Refresh token expiration is missing in configuration."))));
@@ -32,7 +31,7 @@ public class TokenService(IConfiguration config, ITokenStore tokenStore) : IToke
         return tokenDto;
     }
 
-    public string GenerateAccessToken(string userId, Role userRole)
+    public string GenerateAccessToken(Guid userId, List<string> userRoles)
     {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["JwtSettings:Secret"] ??
                                                                   throw new InvalidOperationException(
@@ -41,8 +40,8 @@ public class TokenService(IConfiguration config, ITokenStore tokenStore) : IToke
 
         var claims = new List<Claim>
         {
-            new(JwtRegisteredClaimNames.Sub, userId),
-            new("role", userRole.ToString()),
+            new(JwtRegisteredClaimNames.Sub, userId.ToString()),
+            new(ClaimTypes.Role, string.Join(",", userRoles)),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 

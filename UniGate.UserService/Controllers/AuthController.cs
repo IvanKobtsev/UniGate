@@ -8,22 +8,15 @@ using UniGate.UserService.Interfaces;
 namespace UniGate.UserService.Controllers;
 
 [ApiController]
-[Route("/api")]
-public class AuthController(IUsersService usersService, ITokenStore tokenStore)
+[Route("/api/v1/auth")]
+public class AuthController(IUserService userService, ITokenStore tokenStore)
     : ControllerBase
 {
     [HttpPost("login")]
     [SwaggerOperation(Summary = "User login")]
     public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
     {
-        return (await usersService.Login(loginDto)).GetActionResult();
-    }
-
-    [HttpPost("register")]
-    [SwaggerOperation(Summary = "User registration")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
-    {
-        return (await usersService.Register(registerDto)).GetActionResult();
+        return (await userService.Login(loginDto)).GetActionResult();
     }
 
     [Authorize]
@@ -40,6 +33,6 @@ public class AuthController(IUsersService usersService, ITokenStore tokenStore)
     [SwaggerOperation(Summary = "Refresh access token")]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenDto refreshTokenDto)
     {
-        return (await usersService.RefreshToken(refreshTokenDto.Token)).GetActionResult();
+        return (await userService.RefreshToken(refreshTokenDto.Token)).GetActionResult();
     }
 }

@@ -1,8 +1,7 @@
-namespace UniGateAPI.Enums;
+namespace UniGate.Common.Enums;
 
 public enum Gender
 {
-    None,
     Male,
     Female
 }

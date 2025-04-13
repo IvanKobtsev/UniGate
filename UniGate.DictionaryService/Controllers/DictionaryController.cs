@@ -7,7 +7,7 @@ using UniGate.DictionaryService.Interfaces;
 namespace UniGate.DictionaryService.Controllers;
 
 [ApiController]
-[Route("api")]
+[Route("api/v1")]
 public class DictionaryController(IImportService importService, IDictionaryService dictionaryService) : ControllerBase
 {
     [HttpGet("education_levels")]
@@ -26,7 +26,7 @@ public class DictionaryController(IImportService importService, IDictionaryServi
 
     [HttpGet("programs")]
     [SwaggerOperation(Summary = "Get programs")]
-    public async Task<EducationProgramsDto> GetPrograms(
+    public async Task<EducationProgramsPagedListDto> GetPrograms(
         [Range(1, 2147483647)] [FromQuery] int currentPage = 1, [Range(1, 2147483647)] [FromQuery] int pageSize = 10,
         [FromQuery] Guid? facultyId = null, [Range(0, 2147483647)] [FromQuery] int? educationLevelId = null,
         [FromQuery] string? educationForm = null, [FromQuery] string? language = null,

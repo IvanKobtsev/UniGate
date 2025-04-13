@@ -6,7 +6,7 @@ using UniGateAPI.Enums;
 namespace UniGateAPI.Controllers;
 
 [ApiController]
-[Route("api")]
+[Route("api/v1")]
 public class AdmissionsController : ControllerBase
 {
     [HttpGet("admissions")]

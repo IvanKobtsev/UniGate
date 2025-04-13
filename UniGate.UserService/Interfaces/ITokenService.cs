@@ -1,12 +1,11 @@
 using UniGate.UserService.DTOs.Common;
-using UniGate.UserService.Enums;
 
 namespace UniGate.UserService.Interfaces;
 
 public interface ITokenService
 {
-    public string GenerateAccessToken(string userId, Role userRole);
+    public string GenerateAccessToken(Guid userId, List<string> userRoles);
 
     public string GenerateRefreshToken();
-    public Task<TokenDto> GenerateTokens(string userId, Role userRole);
+    public Task<TokenDto> GenerateTokens(Guid userId, List<string> userRoles);
 }
