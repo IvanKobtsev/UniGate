@@ -1,39 +1,72 @@
+using System.ComponentModel.DataAnnotations;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using UniGateAPI.DTOs.Response;
+using UniGateAPI.DTOs.Request;
 using UniGateAPI.Enums;
+using UniGateAPI.Interfaces;
 
 namespace UniGateAPI.Controllers;
 
 [ApiController]
-[Route("api/v1")]
-public class AdmissionsController : ControllerBase
+[Route("api/v1/admissions")]
+public class AdmissionsController(IApplicantService applicantService, IManagerService managerService) : ControllerBase
 {
-    [HttpGet("admissions")]
-    [SwaggerOperation(Summary = "Get all admissions")]
-    public PaginatedAdmissionsList GetAdmissions([FromQuery] string name, [FromQuery] Guid programId,
-        [FromQuery] List<Guid> faculties, [FromQuery] AdmissionStatus admissionStatus, [FromQuery] bool onlyNotTaken,
-        [FromQuery] bool onlyMine, [FromQuery] Sorting sorting, [FromQuery] int page, [FromQuery] int pageSize)
+    [Authorize(Roles = "Applicant")]
+    [HttpPost("")]
+    [SwaggerOperation(Summary = "Apply as applicant")]
+    public async Task<IActionResult> ApplyApplicant(
+        [FromBody] CreateAdmissionAsApplicantDto createAdmissionAsApplicantDto)
     {
-        throw new NotImplementedException();
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        return userId == null
+            ? Unauthorized()
+            : (await applicantService.CreateAdmissionForApplicant(Guid.Parse(userId),
+                createAdmissionAsApplicantDto.AdmissionType))
+            .GetActionResult();
     }
 
-    [HttpPost("me/admissions")]
+    [HttpGet("")]
+    [SwaggerOperation(Summary = "Get admissions with filters (paginated)")]
+    public async Task<IActionResult> GetPaginatedAdmissions([FromQuery] string? name, [FromQuery] Guid? programId,
+        [FromQuery] List<Guid> faculties, [FromQuery] AdmissionStatus? admissionStatus,
+        [FromQuery] bool onlyNotTaken = false,
+        [FromQuery] bool onlyMine = false, [FromQuery] Sorting sorting = Sorting.DateDesc,
+        [Range(1, int.MaxValue)] [FromQuery] int page = 1,
+        [Range(1, int.MaxValue)] [FromQuery] int pageSize = 10)
+    {
+        return (await applicantService.GetPaginatedAdmissions(name, programId, faculties, admissionStatus, onlyNotTaken,
+            onlyMine,
+            sorting, page, pageSize)).GetActionResult();
+    }
+
+    [Authorize(Roles = "Manager,ChiefManager")]
+    [HttpPost("{admissionId:guid}/me")]
     [SwaggerOperation(Summary = "Take admission for managing by current user")]
-    public void TakeAdmission([FromBody] Guid admissionId)
+    public async Task<IActionResult> TakeAdmission([FromRoute] Guid admissionId)
     {
-        throw new NotImplementedException();
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        return userId == null
+            ? Unauthorized()
+            : (await managerService.AssignManagerToAdmission(Guid.Parse(userId), admissionId)).GetActionResult();
     }
 
-    [HttpDelete("me/admissions/{admissionId:guid}")]
+    [HttpDelete("{admissionId:guid}/me")]
     [SwaggerOperation(Summary = "Remove an admission from current manager")]
-    public void RemoveAdmissionFromTaken(Guid admissionId)
+    public async Task<IActionResult> RemoveAdmissionFromTaken(Guid admissionId)
     {
-        throw new NotImplementedException();
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        return userId == null
+            ? Unauthorized()
+            : (await managerService.AssignManagerToAdmission(Guid.Parse(userId), admissionId)).GetActionResult();
     }
 
-    [HttpPut("admissions/{admissionId:guid}")]
-    [SwaggerOperation(Summary = "Update status of admission")]
+    [HttpPatch("{admissionId:guid}")]
+    [SwaggerOperation(Summary = "Change admission's status")]
     public void UpdateAdmissionStatus(Guid admissionId, [FromBody] AdmissionStatus status)
     {
         throw new NotImplementedException();

@@ -1,38 +1,34 @@
-using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Serilog;
 using UniGate.Common.Extensions;
-using UniGate.ServiceBus;
+using UniGate.Common.Logging;
+using UniGate.ServiceBus.Interfaces;
+using UniGate.ServiceBus.Services;
+using UniGateAPI.Consumers;
 using UniGateAPI.Data;
 using UniGateAPI.Interfaces;
+using UniGateAPI.Repositories;
 using UniGateAPI.Services;
+
+SerilogLogger.ConfigureLogging();
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog();
 
-builder.Services.AddControllers().AddJsonOptions(x =>
-    {
-        x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    })
-    .AddNewtonsoftJson(x =>
-    {
-        x.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-        x.SerializerSettings.Converters.Add(new StringEnumConverter());
-    });
-
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "UniGate.AdmissionService API", Version = "v1" });
-    options.EnableAnnotations();
-});
+builder.Services.AddControllersWithJsonSerializers();
+builder.Services.AddAuthSwaggerGen(builder.Configuration);
+builder.Services.AddAuthenticationAndAuthorization(builder.Configuration);
 
+builder.Services.AddScoped<IMessagePublisher, MessagePublisher>();
+builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
 builder.Services.AddScoped<IApplicantService, ApplicantService>();
-builder.Services.AddSingleton<IMessageBus>(sp => new RabbitMqMessageBus("localhost"));
+builder.Services.AddScoped<IManagerService, ManagerService>();
+builder.Services.AddScoped<IManagerRepository, ManagerRepository>();
+builder.Services.AddScoped<IBackgroundTaskService, BackgroundTaskService>();
+builder.Services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
+builder.Services.AddHostedService<ApplicantMessageConsumer>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));

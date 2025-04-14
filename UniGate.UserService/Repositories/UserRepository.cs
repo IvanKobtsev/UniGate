@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using UniGate.Common.Extensions;
 using UniGate.Common.Utilities;
 using UniGate.UserService.Data;
 using UniGate.UserService.DTOs.Common;
@@ -19,7 +20,7 @@ public class UserRepository(ApplicationDbContext context) : IUserRepository
         return await context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
     }
 
-    public async Task<PaginatedList<ProfileDto>> GetPagedUsersFilteredByRoles(int pageIndex, int pageSize,
+    public async Task<PaginatedList<ProfileDto>> GetPagedUsersFilteredByRoles(int currentPage, int pageSize,
         List<string> roles)
     {
         var roleIds = await context.Roles
@@ -43,14 +44,14 @@ public class UserRepository(ApplicationDbContext context) : IUserRepository
 
         var totalCount = await users.CountAsync();
 
-        var result = await users.Skip((pageIndex - 1) * pageSize).Take(pageSize).ToListAsync();
+        var result = await users.Paginate(currentPage, pageSize).ToListAsync();
 
         return new PaginatedList<ProfileDto>
         {
             Items = result,
-            PageIndex = pageIndex,
+            PageIndex = currentPage,
             PageSize = pageSize,
-            PagesCount = totalCount % pageSize == 0 ? totalCount / pageSize : totalCount / pageSize + 1
+            TotalCount = totalCount
         };
     }
 }

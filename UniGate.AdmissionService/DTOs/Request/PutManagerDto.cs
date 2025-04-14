@@ -1,3 +1,5 @@
+using UniGateAPI.DTOs.Common;
+
 namespace UniGateAPI.DTOs;
 
 public class PutManagerDto

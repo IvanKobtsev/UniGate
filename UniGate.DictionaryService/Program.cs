@@ -1,7 +1,4 @@
-using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Quartz;
 using Serilog;
 using UniGate.Common.Extensions;
@@ -19,18 +16,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseSerilog();
 
-
-builder.Services.AddControllers().AddJsonOptions(x =>
-    {
-        x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    })
-    .AddNewtonsoftJson(x =>
-    {
-        x.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-        x.SerializerSettings.Converters.Add(new StringEnumConverter());
-    });
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddControllersWithJsonSerializers();
+builder.Services.AddAuthSwaggerGen(builder.Configuration);
+builder.Services.AddAuthenticationAndAuthorization(builder.Configuration);
 
 builder.Services.Configure<ExternalApiOptions>(
     builder.Configuration.GetSection("ExternalApi"));

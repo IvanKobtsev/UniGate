@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using UniGate.Common.Enums;
 using UniGate.Common.Utilities;
+using UniGate.ServiceBus.DTOs;
+using UniGate.ServiceBus.Interfaces;
 using UniGate.UserService.Data;
 using UniGate.UserService.DTOs.Common;
 using UniGate.UserService.DTOs.Requests;
@@ -15,7 +17,8 @@ public class ApplicantService(
     IApplicantRepository applicantRepository,
     UserManager<User> userManager,
     ITokenService tokenService,
-    ApplicationDbContext dbContext) : IApplicantService
+    ApplicationDbContext dbContext,
+    IMessagePublisher messagePublisher) : IApplicantService
 {
     public async Task<Result<TokenDto>> RegisterApplicant(RegisterApplicantDto applicant)
     {
@@ -31,6 +34,19 @@ public class ApplicantService(
         await applicantRepository.AddApplicant(applicant.ToApplicant(createdUserResult.Data.Id));
 
         await userManager.AddToRoleAsync(createdUserResult.Data, "Applicant");
+
+        var message = new MessageWrapper<RegisteredApplicantDto>
+        {
+            Action = "RegisteredApplicant",
+            Data = new RegisteredApplicantDto
+            {
+                UserId = createdUserResult.Data.Id,
+                FullName = createdUserResult.Data.FirstName + " " + createdUserResult.Data.LastName + " " +
+                           createdUserResult.Data.Patronymic
+            }
+        };
+
+        await messagePublisher.Publish(message, "actions-with-applicants");
 
         var userRoles = await userManager.GetRolesAsync(createdUserResult.Data);
 

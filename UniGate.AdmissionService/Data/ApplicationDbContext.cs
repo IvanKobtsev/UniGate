@@ -8,5 +8,6 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Admission> Admissions { get; set; }
     public DbSet<ApplicantReference> Applicants { get; set; }
     public DbSet<ManagerReference> Managers { get; set; }
+    public DbSet<DocumentReference> Documents { get; set; }
     public DbSet<ProgramPreference> ProgramPreferences { get; set; }
 }

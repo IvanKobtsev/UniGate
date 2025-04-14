@@ -1,28 +1,21 @@
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using UniGateAPI.DTOs;
+using UniGateAPI.DTOs.Common;
 
 namespace UniGateAPI.Controllers;
 
 [ApiController]
-[Route("api/v1")]
+[Route("api/v1/managers")]
 public class ChiefManagerController : ControllerBase
 {
-    [HttpPost("managers/chiefs")]
-    [SwaggerOperation(Summary = "Create a chief manager")]
-    public Guid CreateManager([FromBody] CreateChiefManagerDto chiefManagerDto)
+    [HttpGet("")]
+    [SwaggerOperation(Summary = "Get all managers paginated")]
+    public List<ManagerLightDto> GetManagers()
     {
         throw new NotImplementedException();
     }
 
-    [HttpGet("managers")]
-    [SwaggerOperation(Summary = "Get all managers")]
-    public List<ShallowManagerDto> GetManagers()
-    {
-        throw new NotImplementedException();
-    }
-
-    [HttpPost("managers/{id:guid}/admissions")]
+    [HttpPost("{id:guid}/admissions")]
     [SwaggerOperation(Summary = "Assign an admission to manager")]
     public void AssignManager(Guid id, [FromBody] Guid admissionId)
     {

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using UniGate.Common.Exceptions;
+using UniGate.Common.Extensions;
 using UniGate.Common.Utilities;
 using UniGate.DictionaryService.Data;
 using UniGate.DictionaryService.Enums;
@@ -157,10 +158,10 @@ public class DictionaryRepository(ApplicationDbContext dbContext) : IDictionaryR
         return await dbContext.Faculties.AsNoTracking().OrderBy(f => f.Name).ToListAsync();
     }
 
-    public async Task<PaginatedList<EducationProgram>> GetPaginatedEducationPrograms(int currentPage = 1,
-        int pageSize = 10,
-        Guid? facultyId = null, int? educationLevelId = null, string? educationForm = null, string? language = null,
-        string? programSearch = null)
+    public async Task<PaginatedList<EducationProgram>> GetPaginatedEducationPrograms(int currentPage,
+        int pageSize,
+        Guid? facultyId, int? educationLevelId, string? educationForm, string? language,
+        string? programSearch)
     {
         var query = dbContext.EducationPrograms.AsNoTracking()
             .Include(ep => ep.Faculty)
@@ -177,15 +178,13 @@ public class DictionaryRepository(ApplicationDbContext dbContext) : IDictionaryR
 
         var totalCount = await query.CountAsync();
 
-        var educationPrograms = await query.OrderBy(ep => ep.Name)
-            .Skip((currentPage - 1) * pageSize)
-            .Take(pageSize)
+        var educationPrograms = await query.OrderBy(ep => ep.Name).Paginate(currentPage, pageSize)
             .ToListAsync();
 
         return new PaginatedList<EducationProgram>
         {
             Items = educationPrograms,
-            PagesCount = totalCount % pageSize == 0 ? totalCount / pageSize : totalCount / pageSize + 1,
+            TotalCount = totalCount,
             PageIndex = currentPage,
             PageSize = pageSize
         };

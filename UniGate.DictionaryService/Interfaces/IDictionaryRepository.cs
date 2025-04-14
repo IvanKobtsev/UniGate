@@ -13,9 +13,9 @@ public interface IDictionaryRepository
     public Task<List<EducationLevel>> GetEducationLevels();
     public Task<List<EducationDocumentType>> GetEducationDocumentTypes();
 
-    public Task<PaginatedList<EducationProgram>> GetPaginatedEducationPrograms(int currentPage = 1, int pageSize = 10,
-        Guid? facultyId = null, int? educationLevelId = null, string? educationForm = null, string? language = null,
-        string? programSearch = null);
+    public Task<PaginatedList<EducationProgram>> GetPaginatedEducationPrograms(int currentPage, int pageSize,
+        Guid? facultyId, int? educationLevelId, string? educationForm, string? language,
+        string? programSearch);
 
     public Task<List<Faculty>> GetFaculties();
     public Task<Guid> StartImport(ImportType importType);

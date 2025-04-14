@@ -5,9 +5,9 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace UniGate.UserService.SchemaFilters;
+namespace UniGate.Common.Filters;
 
-public class PhoneSchemaFilter : ISchemaFilter
+public class OpenApiSchemaFilter : ISchemaFilter
 {
     public void Apply(OpenApiSchema schema, SchemaFilterContext context)
     {

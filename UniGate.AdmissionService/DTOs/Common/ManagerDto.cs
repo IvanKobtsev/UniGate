@@ -1,10 +1,9 @@
-using UniGateAPI.DTOs;
+namespace UniGateAPI.DTOs.Common;
 
 public class ManagerDto
 {
-    public Guid Id { get; set; }
-
-    // public DateTime CreateTime { get; set; }
-    public Guid AssignedFacultyId { get; set; }
-    public List<AdmissionDto> AssignedAdmissions { get; set; } = [];
+    public Guid UserId { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public Guid? AssignedFacultyId { get; set; }
+    public List<AdmissionLightDto> AssignedAdmissions { get; set; } = [];
 }

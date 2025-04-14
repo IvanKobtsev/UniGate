@@ -1,12 +1,12 @@
 using UniGateAPI.Enums;
 
-namespace UniGateAPI.DTOs;
+namespace UniGateAPI.DTOs.Common;
 
 public class AdmissionDto
 {
     public Guid Id { get; set; }
     public DateTime CreateTime { get; set; }
     public AdmissionStatus Status { get; set; }
-    public Guid ApplicantId { get; set; }
-    public List<ProgramPreferenceDto> ProgramPreferences { get; set; } = [];
+    public AdmissionType AdmissionType { get; set; }
+    public required ApplicantLightDto Applicant { get; set; }
 }

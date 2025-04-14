@@ -7,11 +7,14 @@ public class RegisterUserDto
 {
     [EmailAddress] [Required] public string Email { get; set; } = string.Empty;
 
-    [PasswordPropertyText] [Required] public string Password { get; set; } = string.Empty;
+    [MaxLength(50)]
+    [PasswordPropertyText]
+    [Required]
+    public string Password { get; set; } = string.Empty;
 
-    [Required] public string FirstName { get; set; } = string.Empty;
+    [MaxLength(50)] [Required] public string FirstName { get; set; } = string.Empty;
 
-    [Required] public string LastName { get; set; } = string.Empty;
+    [MaxLength(50)] [Required] public string LastName { get; set; } = string.Empty;
 
     public string? Patronymic { get; set; }
 
