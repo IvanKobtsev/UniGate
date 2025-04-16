@@ -17,7 +17,7 @@ public class ManagerService(
 {
     public async Task UpdateManager(Guid userId, string fullName, bool isChief)
     {
-        var foundApplicant = await applicantRepository.RetrieveApplicantReference(userId);
+        var foundApplicant = await applicantRepository.RetrieveApplicantReferenceById(userId);
 
         if (foundApplicant == null)
             await managerRepository.AddManagerReference(new ManagerReference
@@ -34,7 +34,7 @@ public class ManagerService(
 
     public async Task RemoveManager(Guid userId)
     {
-        var foundManager = await managerRepository.RetrieveManagerReference(userId);
+        var foundManager = await managerRepository.RetrieveManagerReferenceById(userId);
 
         if (foundManager == null)
             throw new InvalidOperationException("Tried to delete a non-existing manager");
@@ -53,7 +53,7 @@ public class ManagerService(
                 Message = "Admission not found"
             };
 
-        var foundManager = await applicantRepository.RetrieveApplicantReference(managerId);
+        var foundManager = await applicantRepository.RetrieveApplicantReferenceById(managerId);
 
         if (foundManager == null)
             return new Result
@@ -70,7 +70,7 @@ public class ManagerService(
 
     public async Task<Result<ManagerDto>> GetManagerProfile(Guid userId)
     {
-        var foundManager = await managerRepository.GetManagerReference(userId);
+        var foundManager = await managerRepository.GetManagerReferenceById(userId);
 
         if (foundManager == null)
             return new Result<ManagerDto>
@@ -85,9 +85,18 @@ public class ManagerService(
         };
     }
 
+    public bool CanManagerEditAdmission(ManagerReference manager, Admission admission)
+    {
+        return manager.IsChief ||
+               (manager.AssignedFacultyId != null && manager.AssignedFacultyId == admission
+                   .ProgramPreferences.FirstOrDefault(pp => pp.Priority == 1)
+                   ?.FacultyIdOfChosenProgram) ||
+               manager.UserId == admission.ManagerId;
+    }
+
     public async Task<Result> AssignManagerToFaculty(Guid managerId, Guid facultyId)
     {
-        var foundManager = await managerRepository.RetrieveManagerReference(managerId);
+        var foundManager = await managerRepository.RetrieveManagerReferenceById(managerId);
 
         if (foundManager == null)
             return new Result
@@ -110,14 +119,5 @@ public class ManagerService(
         await dbContext.SaveChangesAsync();
 
         return new Result();
-    }
-
-    public bool CanManagerEditAdmission(ManagerReference manager, Admission admission)
-    {
-        return manager.IsChief ||
-               (manager.AssignedFacultyId != null && manager.AssignedFacultyId == admission
-                   .ProgramPreferences.FirstOrDefault(pp => pp.Priority == 1)
-                   ?.FacultyIdOfChosenProgram) ||
-               manager.UserId == admission.ManagerId;
     }
 }

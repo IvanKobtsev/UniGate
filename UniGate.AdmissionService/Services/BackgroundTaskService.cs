@@ -12,7 +12,7 @@ public class BackgroundTaskService(
 {
     public async Task UpdateApplicantName(Guid userId, string fullName)
     {
-        var foundApplicant = await applicantRepository.RetrieveApplicantReference(userId);
+        var foundApplicant = await applicantRepository.RetrieveApplicantReferenceById(userId);
 
         if (foundApplicant == null)
             await applicantRepository.AddApplicantReference(new ApplicantReference
@@ -28,7 +28,7 @@ public class BackgroundTaskService(
 
     public async Task RemoveApplicant(Guid userId)
     {
-        var foundApplicant = await applicantRepository.RetrieveApplicantReference(userId);
+        var foundApplicant = await applicantRepository.RetrieveApplicantReferenceById(userId);
 
         if (foundApplicant == null)
             throw new InvalidOperationException("Tried to delete a non-existing applicant");
@@ -38,7 +38,7 @@ public class BackgroundTaskService(
 
     public async Task UpdateApplicantDocumentType(Guid userId, Guid documentTypeId)
     {
-        var foundApplicant = await applicantRepository.RetrieveApplicantReference(userId);
+        var foundApplicant = await applicantRepository.RetrieveApplicantReferenceById(userId);
 
         if (foundApplicant == null)
             throw new InvalidOperationException("Tried to update a non-existing applicant");
@@ -50,7 +50,7 @@ public class BackgroundTaskService(
 
     public async Task UpdateManagerData(Guid userId, bool isChief, string fullName)
     {
-        var foundManager = await managerRepository.RetrieveManagerReference(userId);
+        var foundManager = await managerRepository.RetrieveManagerReferenceById(userId);
 
         if (foundManager == null)
         {
@@ -72,7 +72,7 @@ public class BackgroundTaskService(
 
     public async Task RemoveManager(Guid userId)
     {
-        var foundManager = await managerRepository.RetrieveManagerReference(userId);
+        var foundManager = await managerRepository.RetrieveManagerReferenceById(userId);
 
         if (foundManager == null)
             throw new InvalidOperationException("Tried to delete a non-existing manager");

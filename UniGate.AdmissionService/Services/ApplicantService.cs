@@ -18,13 +18,14 @@ public class ApplicantService(
     IApplicantRepository applicantRepository,
     IConfiguration config,
     IAdmissionRepository admissionRepository,
+    IManagerRepository managerRepository,
     HmacHttpClient hmacHttpClient)
     : IApplicantService
 {
     public async Task<Result<CreateAdmissionAsApplicantDto>> CreateAdmissionForApplicant(Guid userId,
         AdmissionType admissionType)
     {
-        var foundApplicant = await applicantRepository.GetApplicantReference(userId);
+        var foundApplicant = await applicantRepository.GetApplicantReferenceById(userId);
 
         if (foundApplicant == null)
             return new Result<CreateAdmissionAsApplicantDto>
@@ -98,7 +99,7 @@ public class ApplicantService(
 
     public async Task<Result> ChooseEducationProgramAsApplicant(Guid userId, Guid admissionId, Guid programId)
     {
-        var applicantReference = await applicantRepository.GetApplicantReference(userId);
+        var applicantReference = await applicantRepository.GetApplicantReferenceById(userId);
 
         if (applicantReference == null)
             return new Result
@@ -168,11 +169,7 @@ public class ApplicantService(
         });
 
         if (!addResult)
-            return new Result
-            {
-                Code = HttpCode.InternalServerError,
-                Message = "An unexpected error happened when adding program preference"
-            };
+            throw new InternalServerException("An unexpected error happened when creating new program preference");
 
         await dbContext.SaveChangesAsync();
 
@@ -208,7 +205,7 @@ public class ApplicantService(
 
     public async Task<Result<AdmissionsOfApplicantDto>> GetAdmissionsOfUser(Guid userId)
     {
-        var foundApplicant = await applicantRepository.RetrieveApplicantReference(userId, true);
+        var foundApplicant = await applicantRepository.RetrieveApplicantReferenceById(userId, true);
 
         if (foundApplicant == null)
             return new Result<AdmissionsOfApplicantDto>
@@ -229,5 +226,165 @@ public class ApplicantService(
                 BudgetaryAdmission = budgetaryAdmission?.ToMyDto()
             }
         };
+    }
+
+    public async Task<Result> ChangePriorityOfProgramForApplicant(Guid userId, List<string> userRoles,
+        Guid programPreferenceId,
+        int newPriority)
+    {
+        var foundProgramPreference = await admissionRepository.RetrieveProgramPreferenceById(programPreferenceId);
+
+        if (foundProgramPreference == null)
+            return new Result
+            {
+                Code = HttpCode.NotFound,
+                Message = "Program preference not found"
+            };
+
+        var foundAdmission = await admissionRepository.RetrieveAdmissionById(foundProgramPreference.AdmissionId, true);
+
+        if (foundAdmission == null)
+            throw new InvalidOperationException("Invalid data in DB: Program reference with id = " +
+                                                programPreferenceId + " is linked to the non-existent admission");
+
+        var canEditResult = await CheckIfUserCanEditApplicantData(userId, userRoles,
+            foundAdmission.ApplicantReference.UserId);
+
+        if (canEditResult.IsFailed) return canEditResult;
+
+        if (newPriority > foundAdmission.ProgramPreferences.Count)
+            return new Result
+            {
+                Code = HttpCode.BadRequest,
+                Message = "New priority can't be greater than the number of currently chosen programs"
+            };
+
+        if (newPriority == foundProgramPreference.Priority)
+            return new Result
+            {
+                Code = HttpCode.BadRequest,
+                Message = "New priority can't be equal to the current one"
+            };
+
+        var oldPriority = foundProgramPreference.Priority;
+        foundProgramPreference.Priority = newPriority;
+        foundProgramPreference.Admission.LastUpdateTime = DateTime.UtcNow;
+
+        foundAdmission.ProgramPreferences.ForEach(pp =>
+        {
+            if (pp.Priority > oldPriority && pp.Id != programPreferenceId)
+                --pp.Priority;
+            if (pp.Priority >= newPriority && pp.Id != programPreferenceId)
+                ++pp.Priority;
+        });
+
+        var sortResult = await SortProgramPreferences(foundProgramPreference.AdmissionId);
+        if (!sortResult)
+            throw new InternalServerException("Failed to sort program preferences after changing priority");
+
+        await dbContext.SaveChangesAsync();
+
+        return new Result();
+    }
+
+    public async Task<Result> DeleteProgramPreference(Guid userId, List<string> roles, Guid programPreferenceId)
+    {
+        var programPreference = await admissionRepository.RetrieveProgramPreferenceById(programPreferenceId, true);
+
+        if (programPreference == null)
+            return new Result
+            {
+                Code = HttpCode.NotFound,
+                Message = "Program preference not found"
+            };
+
+
+        var checkResult = await CheckIfUserCanEditApplicantData(userId, roles, programPreference.Admission.ApplicantId);
+
+        if (checkResult.IsFailed) return checkResult;
+
+        var deleteResult = await admissionRepository.RemoveProgramPreference(programPreference);
+        if (!deleteResult)
+            throw new InternalServerException("An unexpected error happened when deleting program preference");
+
+        var sortResult = await SortProgramPreferences(programPreference.AdmissionId);
+        if (!sortResult)
+            throw new InternalServerException(
+                "An unexpected error happened when sorting program preferences after deletion");
+
+        await dbContext.SaveChangesAsync();
+
+        return new Result();
+    }
+
+    public async Task<Result> CheckIfUserCanEditApplicantData(Guid userId, List<string> userRoles, Guid applicantId,
+        bool onlyPersonalData = false)
+    {
+        var foundApplicant = await applicantRepository.RetrieveApplicantReferenceById(applicantId, true);
+
+        if (foundApplicant == null)
+            return new Result
+            {
+                Code = HttpCode.NotFound,
+                Message = "Applicant not found"
+            };
+
+        if (onlyPersonalData) return await CanManagerEditApplicantPersonalData(userId, userRoles, foundApplicant);
+
+        return CanUserEditSpecifiedApplicant(userId, userRoles, foundApplicant);
+    }
+
+    private static Result CanUserEditSpecifiedApplicant(Guid userId, List<string> userRoles,
+        ApplicantReference applicant)
+    {
+        if (userRoles.Contains("Admins") || userRoles.Contains("ChiefManager")) return new Result();
+
+        if (userRoles.Contains("Manager") && applicant.Admissions.All(a => a.ManagerId != userId))
+            return new Result
+            {
+                Code = HttpCode.Forbidden,
+                Message = "The specified applicant can't be edited by current user in any way"
+            };
+        if (userRoles.Contains("Applicant") && userId != applicant.UserId)
+            return new Result
+            {
+                Code = HttpCode.Forbidden,
+                Message = "Applicants can't be edited by other applicants"
+            };
+
+        return new Result();
+    }
+
+    private async Task<Result> CanManagerEditApplicantPersonalData(Guid userId, List<string> userRoles,
+        ApplicantReference applicant)
+    {
+        var initialResult = CanUserEditSpecifiedApplicant(userId, userRoles, applicant);
+
+        if (!initialResult.IsFailed || !userRoles.Contains("Manager")) return initialResult;
+
+        var foundManager = await managerRepository.GetManagerReferenceById(userId);
+
+        if (foundManager == null)
+            throw new InvalidOperationException("Invalid data in DB: there should be manager with Id = " + userId);
+
+        return applicant.Admissions.Any(a => a.ProgramPreferences.Any(pp =>
+            pp.Priority == 1 && pp.FacultyIdOfChosenProgram == foundManager.AssignedFacultyId))
+            ? new Result()
+            : initialResult;
+    }
+
+    private async Task<bool> SortProgramPreferences(Guid admissionId)
+    {
+        var foundAdmission = await admissionRepository.RetrieveAdmissionById(admissionId, true);
+
+        if (foundAdmission == null)
+            return false;
+
+        var sortedList = foundAdmission.ProgramPreferences.OrderBy(pp => pp.Priority).ToList();
+
+        for (var i = 0; i < sortedList.Count; i++)
+            sortedList[i].Priority = i + 1;
+
+        return true;
     }
 }

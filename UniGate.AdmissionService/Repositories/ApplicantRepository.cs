@@ -7,18 +7,18 @@ namespace UniGateAPI.Repositories;
 
 public class ApplicantRepository(ApplicationDbContext dbContext) : IApplicantRepository
 {
-    public async Task<ApplicantReference?> GetApplicantReference(Guid userId)
+    public async Task<ApplicantReference?> GetApplicantReferenceById(Guid userId)
     {
         return await dbContext.Applicants.AsNoTracking().FirstOrDefaultAsync(a => a.UserId == userId);
     }
 
-    public async Task<ApplicantReference?> RetrieveApplicantReference(Guid userId,
+    public async Task<ApplicantReference?> RetrieveApplicantReferenceById(Guid userId,
         bool includeAdmissionsWithPreferences = false)
     {
         if (includeAdmissionsWithPreferences)
             return await dbContext.Applicants
                 .Include(a => a.Admissions).ThenInclude(ad => ad.ProgramPreferences)
-                .AsNoTracking()
+                .AsSplitQuery().AsNoTracking()
                 .FirstOrDefaultAsync(a => a.UserId == userId);
 
         return await dbContext.Applicants.FindAsync(userId);

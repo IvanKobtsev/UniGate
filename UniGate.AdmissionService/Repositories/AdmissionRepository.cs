@@ -59,8 +59,15 @@ public class AdmissionRepository(ApplicationDbContext dbContext) : IAdmissionRep
         return await dbContext.Admissions.AsNoTracking().FirstOrDefaultAsync(a => a.Id == admissionId);
     }
 
-    public async Task<Admission?> RetrieveAdmissionById(Guid admissionId)
+    public async Task<Admission?> RetrieveAdmissionById(Guid admissionId,
+        bool includeChosenProgramsAndApplicantRef = false)
     {
+        if (includeChosenProgramsAndApplicantRef)
+            return await dbContext.Admissions.Include(a => a.ProgramPreferences)
+                .Include(a => a.ApplicantReference)
+                .AsSplitQuery()
+                .FirstOrDefaultAsync(a => a.Id == admissionId);
+
         return await dbContext.Admissions.FindAsync(admissionId);
     }
 
@@ -90,5 +97,30 @@ public class AdmissionRepository(ApplicationDbContext dbContext) : IAdmissionRep
         await dbContext.ProgramPreferences.AddAsync(programPreference);
 
         return true;
+    }
+
+    public async Task<bool> RemoveProgramPreference(ProgramPreference programPreference)
+    {
+        var existingProgramPreference = await dbContext.ProgramPreferences
+            .FirstOrDefaultAsync(a =>
+                a.AdmissionId == programPreference.AdmissionId &&
+                a.ChosenProgramId == programPreference.ChosenProgramId);
+
+        if (existingProgramPreference == null) return false;
+
+        dbContext.ProgramPreferences.Remove(existingProgramPreference);
+
+        return true;
+    }
+
+    public async Task<ProgramPreference?> RetrieveProgramPreferenceById(Guid programPreferenceId,
+        bool includeAdmission = false)
+    {
+        if (includeAdmission)
+            return await dbContext.ProgramPreferences.Include(a => a.Admission)
+                .ThenInclude(ad => ad.ApplicantReference).AsSplitQuery()
+                .FirstOrDefaultAsync(a => a.Id == programPreferenceId);
+
+        return await dbContext.ProgramPreferences.FindAsync(programPreferenceId);
     }
 }

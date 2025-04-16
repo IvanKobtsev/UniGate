@@ -19,6 +19,6 @@ public static class ProgramPreferenceMapper
 
     public static List<ProgramPreferenceDto> ToDtos(this List<ProgramPreference> programPreferences)
     {
-        return programPreferences.Select(ToDto).ToList();
+        return programPreferences.Select(ToDto).OrderBy(pp => pp.Priority).ToList();
     }
 }

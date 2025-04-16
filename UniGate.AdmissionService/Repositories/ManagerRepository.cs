@@ -21,12 +21,12 @@ public class ManagerRepository(ApplicationDbContext dbContext) : IManagerReposit
         return true;
     }
 
-    public async Task<ManagerReference?> RetrieveManagerReference(Guid userId)
+    public async Task<ManagerReference?> RetrieveManagerReferenceById(Guid userId)
     {
         return await dbContext.Managers.FindAsync(userId);
     }
 
-    public async Task<ManagerReference?> GetManagerReference(Guid userId)
+    public async Task<ManagerReference?> GetManagerReferenceById(Guid userId)
     {
         return await dbContext.Managers.AsNoTracking().Include(m => m.AssignedAdmissions)
             .FirstOrDefaultAsync(m => m.UserId == userId);

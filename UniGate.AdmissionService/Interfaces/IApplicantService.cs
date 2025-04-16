@@ -12,6 +12,12 @@ public interface IApplicantService
 
     public Task<Result> ChooseEducationProgramAsApplicant(Guid userId, Guid admissionId, Guid programId);
 
+    public Task<Result> ChangePriorityOfProgramForApplicant(Guid userId, List<string> roles,
+        Guid programPreferenceId,
+        int newPriority);
+
+    public Task<Result> DeleteProgramPreference(Guid userId, List<string> roles, Guid programPreferenceId);
+
     public Task<Result<PaginatedAdmissionsList>> GetPaginatedAdmissions(string? name, Guid? programId,
         List<Guid> faculties, AdmissionStatus? admissionStatus,
         bool onlyNotTaken = false,
@@ -21,4 +27,7 @@ public interface IApplicantService
     public Task<Result<AdmissionsOfApplicantDto>> GetAdmissionsOfUser(Guid userId);
 
     public Task<Result<ProgramPreferencesDto>> GetProgramPreferences(Guid userId, Guid admissionId);
+
+    public Task<Result> CheckIfUserCanEditApplicantData(Guid userId, List<string> userRoles, Guid applicantId,
+        bool onlyPersonalData = false);
 }

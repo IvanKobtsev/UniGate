@@ -27,16 +27,32 @@ public class ProgramPreferenceController(IApplicantService applicantService) : C
     }
 
     [Authorize]
-    [HttpPatch("{id:guid}")]
+    [HttpPatch("{programPreferenceId:guid}")]
     [SwaggerOperation(Summary = "Change the priority of chosen education program")]
-    public void ChangeProgramPriority([FromRoute] Guid id, [FromBody] ChangeProgramPriorityDto changeProgramPriorityDto)
+    public async Task<IActionResult> ChangeProgramPriority([FromRoute] Guid programPreferenceId,
+        [FromBody] ChangeProgramPriorityDto changeProgramPriorityDto)
     {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var roles = User.FindFirst(ClaimTypes.Role)?.Value.Split(',').ToList();
+
+        return userId == null || roles == null
+            ? Unauthorized()
+            : (await applicantService.ChangePriorityOfProgramForApplicant(Guid.Parse(userId), roles,
+                programPreferenceId,
+                changeProgramPriorityDto.NewPriority)).GetActionResult();
     }
 
     [Authorize]
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("{programPreferenceId:guid}")]
     [SwaggerOperation(Summary = "Remove education program from chosen")]
-    public void DeleteProgramFromChosen([FromRoute] Guid id)
+    public async Task<IActionResult> DeleteProgramFromChosen([FromRoute] Guid programPreferenceId)
     {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var roles = User.FindFirst(ClaimTypes.Role)?.Value.Split(',').ToList();
+
+        return userId == null || roles == null
+            ? Unauthorized()
+            : (await applicantService.DeleteProgramPreference(Guid.Parse(userId), roles,
+                programPreferenceId)).GetActionResult();
     }
 }
