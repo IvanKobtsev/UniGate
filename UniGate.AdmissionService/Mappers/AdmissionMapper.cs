@@ -1,4 +1,5 @@
 using UniGateAPI.DTOs.Common;
+using UniGateAPI.DTOs.Response;
 using UniGateAPI.Models;
 
 namespace UniGateAPI.Mappers;
@@ -55,5 +56,18 @@ public static class AdmissionMapper
     public static List<AdmissionFullDto> ToFullDtos(this List<Admission> admissions)
     {
         return admissions.Select(ToFullDto).ToList();
+    }
+
+    public static MyAdmissionDto ToMyDto(this Admission admission)
+    {
+        return new MyAdmissionDto
+        {
+            Id = admission.Id,
+            CreateTime = admission.CreateTime,
+            LastUpdateTime = admission.LastUpdateTime,
+            AdmissionType = admission.AdmissionType,
+            Status = admission.Status,
+            ProgramPreferences = admission.ProgramPreferences.ToDtos()
+        };
     }
 }

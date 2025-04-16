@@ -1,4 +1,4 @@
-using UniGate.DictionaryService.DTOs;
+using UniGate.DictionaryService.DTOs.Dictionary;
 using UniGate.DictionaryService.Models;
 
 namespace UniGate.DictionaryService.Mappers;

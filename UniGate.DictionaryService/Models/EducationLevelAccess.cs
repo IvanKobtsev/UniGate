@@ -6,5 +6,5 @@ public class EducationLevelAccess
     public Guid EducationLevelId { get; set; }
     public EducationLevel EducationLevel { get; set; }
     public Guid EducationDocumentTypeId { get; set; }
-    public EducationDocumentType EducationDocumentType { get; set; }
+    public EducationDocumentType? EducationDocumentType { get; set; }
 }

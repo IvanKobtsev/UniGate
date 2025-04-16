@@ -9,6 +9,7 @@ using UniGate.UserService.DTOs.Requests;
 using UniGate.UserService.Interfaces;
 using UniGate.UserService.Mappers;
 using UniGate.UserService.Models;
+using UpdateApplicantDto = UniGate.ServiceBus.DTOs.UpdateApplicantDto;
 
 namespace UniGate.UserService.Services;
 
@@ -35,13 +36,13 @@ public class ApplicantService(
 
         await userManager.AddToRoleAsync(createdUserResult.Data, "Applicant");
 
-        var message = new MessageWrapper<RegisteredApplicantDto>
+        var message = new MessageWrapper<UpdateApplicantDto>
         {
-            Action = "RegisteredApplicant",
-            Data = new RegisteredApplicantDto
+            Action = "UpdateApplicant",
+            Data = new UpdateApplicantDto
             {
                 UserId = createdUserResult.Data.Id,
-                FullName = createdUserResult.Data.FirstName + " " + createdUserResult.Data.LastName + " " +
+                FullName = createdUserResult.Data.LastName + " " + createdUserResult.Data.FirstName + " " +
                            createdUserResult.Data.Patronymic
             }
         };
@@ -70,7 +71,7 @@ public class ApplicantService(
             };
     }
 
-    public async Task<Result> UpdateApplicant(Guid userId, UpdateApplicantDto applicant)
+    public async Task<Result> UpdateApplicant(Guid userId, DTOs.Requests.UpdateApplicantDto applicant)
     {
         var foundApplicant = await applicantRepository.RetrieveApplicant(userId);
 

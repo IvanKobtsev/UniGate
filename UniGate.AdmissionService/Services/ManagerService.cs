@@ -11,6 +11,7 @@ namespace UniGateAPI.Services;
 public class ManagerService(
     IManagerRepository managerRepository,
     IApplicantRepository applicantRepository,
+    IAdmissionRepository admissionRepository,
     ApplicationDbContext dbContext)
     : IManagerService
 {
@@ -43,7 +44,7 @@ public class ManagerService(
 
     public async Task<Result> AssignManagerToAdmission(Guid managerId, Guid admissionId)
     {
-        var foundAdmission = await applicantRepository.RetrieveAdmissionById(admissionId);
+        var foundAdmission = await admissionRepository.RetrieveAdmissionById(admissionId);
 
         if (foundAdmission == null)
             return new Result
@@ -109,5 +110,14 @@ public class ManagerService(
         await dbContext.SaveChangesAsync();
 
         return new Result();
+    }
+
+    public bool CanManagerEditAdmission(ManagerReference manager, Admission admission)
+    {
+        return manager.IsChief ||
+               (manager.AssignedFacultyId != null && manager.AssignedFacultyId == admission
+                   .ProgramPreferences.FirstOrDefault(pp => pp.Priority == 1)
+                   ?.FacultyIdOfChosenProgram) ||
+               manager.UserId == admission.ManagerId;
     }
 }

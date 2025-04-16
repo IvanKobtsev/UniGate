@@ -1,53 +1,36 @@
-using System.Text;
 using System.Text.Json;
-using RabbitMQ.Client.Events;
 using UniGate.ServiceBus.DTOs;
 using UniGate.ServiceBus.Interfaces;
+using UniGate.ServiceBus.Services;
 using UniGateAPI.Interfaces;
 
 namespace UniGateAPI.Consumers;
 
 public class ApplicantMessageConsumer(IRabbitMqConnection connectionProvider, IServiceProvider serviceProvider)
-    : BackgroundService
+    : MessageConsumerBase(connectionProvider, serviceProvider)
 {
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override string QueueName => "actions-with-applicants";
+    protected override string ConsumerTag => "applicant";
+
+    protected override async Task HandleMessageAsync(MessageWrapper<JsonElement> message)
     {
-        var connection = await connectionProvider.GetConnection();
-        var channel = await connection.CreateChannelAsync(cancellationToken: stoppingToken);
+        using var scope = ServiceProvider.CreateScope();
+        var backgroundTaskServiceService = scope.ServiceProvider.GetRequiredService<IBackgroundTaskService>();
 
-        await channel.QueueDeclareAsync("applicant-queue", false, false, false, cancellationToken: stoppingToken);
-
-        var consumer = new AsyncEventingBasicConsumer(channel);
-
-        consumer.ReceivedAsync += async (model, ea) =>
+        switch (message.Action)
         {
-            var json = Encoding.UTF8.GetString(ea.Body.ToArray());
-            var message = JsonSerializer.Deserialize<MessageWrapper<JsonElement>>(json);
+            case "UpdateApplicant":
+                var applicantRefData = message.Data.Deserialize<UpdateApplicantDto>();
 
-            if (message is null) throw new NullReferenceException();
+                if (applicantRefData is null)
+                    throw new NullReferenceException("UpdateApplicantDto is null");
 
-            using var scope = serviceProvider.CreateScope();
-            var backgroundTaskServiceService = scope.ServiceProvider.GetRequiredService<IBackgroundTaskService>();
+                await backgroundTaskServiceService.UpdateApplicantName(applicantRefData.UserId,
+                    applicantRefData.FullName);
 
-            switch (message.Action)
-            {
-                case "RegisteredApplicant":
-                    var applicantRefData = message.Data.Deserialize<RegisteredApplicantDto>();
-
-                    if (applicantRefData is null)
-                        throw new NullReferenceException("RegisteredApplicantDto is null");
-
-                    await backgroundTaskServiceService.UpdateApplicantName(applicantRefData.UserId,
-                        applicantRefData.FullName);
-
-                    break;
-                default:
-                    throw new Exception($"Unknown action: {message.Action}");
-            }
-        };
-
-        await channel.BasicConsumeAsync("actions-with-applicants", true, consumer: consumer, noLocal: false,
-            exclusive: false,
-            consumerTag: "applicant", arguments: null, cancellationToken: stoppingToken);
+                break;
+            default:
+                throw new Exception("Unknown action when receiving message in " + QueueName + ": {message.Action}");
+        }
     }
 }

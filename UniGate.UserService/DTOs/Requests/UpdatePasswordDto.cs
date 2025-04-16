@@ -1,9 +1,10 @@
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace UniGate.UserService.DTOs.Requests;
 
 public class UpdatePasswordDto
 {
-    [PasswordPropertyText] public required string CurrentPassword { get; set; }
-    [PasswordPropertyText] public required string NewPassword { get; set; }
+    [Required] [PasswordPropertyText] public required string CurrentPassword { get; set; }
+    [Required] [PasswordPropertyText] public required string NewPassword { get; set; }
 }

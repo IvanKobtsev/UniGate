@@ -12,7 +12,7 @@ public static class ProgramPreferenceMapper
             Id = programPreference.Id,
             CreateTime = programPreference.CreateTime,
             ChosenProgramId = programPreference.ChosenProgramId,
-            FacultyOfChosenProgramId = programPreference.FacultyOfChosenProgramId,
+            FacultyIdOfChosenProgram = programPreference.FacultyIdOfChosenProgram,
             Priority = programPreference.Priority
         };
     }

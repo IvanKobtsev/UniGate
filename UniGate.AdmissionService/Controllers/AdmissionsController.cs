@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using UniGate.Common.Enums;
 using UniGateAPI.DTOs.Request;
 using UniGateAPI.Enums;
 using UniGateAPI.Interfaces;
@@ -15,7 +16,7 @@ public class AdmissionsController(IApplicantService applicantService, IManagerSe
 {
     [Authorize(Roles = "Applicant")]
     [HttpPost("")]
-    [SwaggerOperation(Summary = "Apply as applicant")]
+    [SwaggerOperation(Summary = "Create admission as applicant")]
     public async Task<IActionResult> ApplyApplicant(
         [FromBody] CreateAdmissionAsApplicantDto createAdmissionAsApplicantDto)
     {
@@ -70,5 +71,18 @@ public class AdmissionsController(IApplicantService applicantService, IManagerSe
     public void UpdateAdmissionStatus(Guid admissionId, [FromBody] AdmissionStatus status)
     {
         throw new NotImplementedException();
+    }
+
+    // [Authorize(Roles="Manager,ChiefManager,Admin")]
+    [Authorize]
+    [HttpGet("{admissionId:guid}/program-preferences")]
+    [SwaggerOperation(Summary = "Get program preferences of specified admission")]
+    public async Task<IActionResult> GetProgramPreferences([FromRoute] Guid admissionId)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        return userId == null
+            ? Unauthorized()
+            : (await applicantService.GetProgramPreferences(Guid.Parse(userId), admissionId)).GetActionResult();
     }
 }

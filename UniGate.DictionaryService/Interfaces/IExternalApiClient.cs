@@ -1,11 +1,12 @@
 using UniGate.DictionaryService.DTOs;
+using UniGate.DictionaryService.DTOs.External;
 
 namespace UniGate.DictionaryService.Interfaces;
 
 public interface IExternalApiClient
 {
-    public Task<List<EducationLevelDto>> ImportEducationLevelsAsync();
-    public Task<List<FacultyDto>> ImportFacultiesAsync();
-    public Task<List<EducationDocumentTypeDto>> ImportEducationDocumentTypesAsync();
-    public Task<EducationProgramsPagedListDto> ImportEducationProgramsAsync(int page = 1);
+    public Task<List<EducationLevelModel>> ImportEducationLevelsAsync();
+    public Task<List<FacultyModel>> ImportFacultiesAsync();
+    public Task<List<EducationDocumentTypeModel>> ImportEducationDocumentTypesAsync();
+    public Task<ProgramPagedListModel> ImportEducationProgramsAsync(int page = 1);
 }

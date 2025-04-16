@@ -1,12 +1,18 @@
+using UniGate.Common.DTOs;
+using UniGate.Common.Enums;
 using UniGate.Common.Exceptions;
-using UniGate.DictionaryService.DTOs;
+using UniGate.DictionaryService.Data;
+using UniGate.DictionaryService.DTOs.Dictionary;
 using UniGate.DictionaryService.Enums;
 using UniGate.DictionaryService.Interfaces;
 using UniGate.DictionaryService.Mappers;
 
 namespace UniGate.DictionaryService.Services;
 
-public class ImportService(IExternalApiClient apiClient, IDictionaryRepository dictionaryRepository) : IImportService
+public class ImportService(
+    IExternalApiClient apiClient,
+    IDictionaryRepository dictionaryRepository,
+    ApplicationDbContext dbContext) : IImportService
 {
     public async Task Import(ImportType importType)
     {
@@ -14,13 +20,15 @@ public class ImportService(IExternalApiClient apiClient, IDictionaryRepository d
 
         var newImportId = await dictionaryRepository.StartImport(importType);
 
-        var educationLevelsDictionary = await dictionaryRepository.GetEducationLevelsIntToGuidDictionary();
-
         try
         {
             var educationLevelDtos = await apiClient.ImportEducationLevelsAsync();
 
             await dictionaryRepository.StoreEducationLevels(educationLevelDtos.ToEducationLevels());
+
+            await dbContext.SaveChangesAsync();
+
+            var educationLevelsDictionary = await dictionaryRepository.GetEducationLevelsIntToGuidDictionary();
 
             var facultyDtos = await apiClient.ImportFacultiesAsync();
 
@@ -61,9 +69,11 @@ public class ImportService(IExternalApiClient apiClient, IDictionaryRepository d
         }
     }
 
-    public async Task<List<ImportStateDto>> GetImportHistory()
+    public async Task<PaginatedListDto<ImportStateDto>> GetImportHistory(int currentPage, int pageSize,
+        Sorting sorting)
     {
-        return (await dictionaryRepository.GetImportStates()).ToDtos();
+        return (await dictionaryRepository.GetImportStates(currentPage, pageSize, sorting))
+            .ToPaginatedListDto(items => items.ToDtos());
     }
 
     public async Task<ImportStateDto?> GetImportStatus()

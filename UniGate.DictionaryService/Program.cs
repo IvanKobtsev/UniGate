@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Quartz;
 using Serilog;
 using UniGate.Common.Extensions;
+using UniGate.Common.HMAC;
 using UniGate.Common.Logging;
 using UniGate.DictionaryService.Data;
 using UniGate.DictionaryService.ExternalApiClient;
@@ -29,6 +30,9 @@ builder.Services.AddScoped<IDictionaryService, DictionaryService>();
 builder.Services.AddScoped<IExternalApiClient, ExternalApiClient>();
 builder.Services.AddScoped<IImportService, ImportService>();
 builder.Services.AddScoped<IJobService, JobService>();
+builder.Services.AddScoped<IValidationService, ValidationService>();
+builder.Services.AddScoped<HmacAuthHandler>();
+builder.Services.AddScoped<HmacHttpClient>();
 builder.Services.AddScoped<HttpClient>();
 
 builder.Services.AddQuartz(q =>

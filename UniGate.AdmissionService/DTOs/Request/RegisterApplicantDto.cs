@@ -13,5 +13,5 @@ public class RegisterApplicantDto
     public Gender Gender { get; set; }
     public string Citizenship { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
-    public List<NewProgramPreferenceDto> ProgramPreferences { get; set; } = [];
+    public List<CreateProgramPreferenceDto> ProgramPreferences { get; set; } = [];
 }

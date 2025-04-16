@@ -1,6 +1,6 @@
 namespace UniGate.DictionaryService.DTOs;
 
-public class EducationProgramDto
+public class EducationProgramModel
 {
     public Guid Id { get; set; }
     public DateTime CreateTime { get; set; }
@@ -8,6 +8,6 @@ public class EducationProgramDto
     public string Code { get; set; }
     public string Language { get; set; }
     public string EducationForm { get; set; }
-    public FacultyDto Faculty { get; set; }
-    public EducationLevelDto EducationLevel { get; set; }
+    public FacultyModel Faculty { get; set; }
+    public EducationLevelModel EducationLevel { get; set; }
 }

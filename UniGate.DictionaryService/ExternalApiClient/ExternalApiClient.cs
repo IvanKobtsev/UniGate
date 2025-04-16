@@ -3,6 +3,7 @@ using System.Text;
 using Microsoft.Extensions.Options;
 using UniGate.Common.Exceptions;
 using UniGate.DictionaryService.DTOs;
+using UniGate.DictionaryService.DTOs.External;
 using UniGate.DictionaryService.Interfaces;
 
 namespace UniGate.DictionaryService.ExternalApiClient;
@@ -21,10 +22,10 @@ public class ExternalApiClient : IExternalApiClient
             Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_options.Login}:{_options.Password}")));
     }
 
-    public async Task<List<EducationLevelDto>> ImportEducationLevelsAsync()
+    public async Task<List<EducationLevelModel>> ImportEducationLevelsAsync()
     {
         var response =
-            await _http.GetFromJsonAsync<List<EducationLevelDto>>(
+            await _http.GetFromJsonAsync<List<EducationLevelModel>>(
                 "/api/dictionary/education_levels");
 
         if (response == null) throw new NotFoundException("Import failed: service responded with null");
@@ -32,10 +33,10 @@ public class ExternalApiClient : IExternalApiClient
         return response;
     }
 
-    public async Task<List<FacultyDto>> ImportFacultiesAsync()
+    public async Task<List<FacultyModel>> ImportFacultiesAsync()
     {
         var response =
-            await _http.GetFromJsonAsync<List<FacultyDto>>(
+            await _http.GetFromJsonAsync<List<FacultyModel>>(
                 "/api/dictionary/faculties");
 
         if (response == null) throw new NotFoundException("Import failed: service responded with null");
@@ -43,10 +44,10 @@ public class ExternalApiClient : IExternalApiClient
         return response;
     }
 
-    public async Task<List<EducationDocumentTypeDto>> ImportEducationDocumentTypesAsync()
+    public async Task<List<EducationDocumentTypeModel>> ImportEducationDocumentTypesAsync()
     {
         var response =
-            await _http.GetFromJsonAsync<List<EducationDocumentTypeDto>>(
+            await _http.GetFromJsonAsync<List<EducationDocumentTypeModel>>(
                 "/api/dictionary/document_types");
 
         if (response == null) throw new NotFoundException("Import failed: service responded with null");
@@ -54,10 +55,10 @@ public class ExternalApiClient : IExternalApiClient
         return response;
     }
 
-    public async Task<EducationProgramsPagedListDto> ImportEducationProgramsAsync(int page = 1)
+    public async Task<ProgramPagedListModel> ImportEducationProgramsAsync(int page = 1)
     {
         var response =
-            await _http.GetFromJsonAsync<EducationProgramsPagedListDto>(
+            await _http.GetFromJsonAsync<ProgramPagedListModel>(
                 "/api/dictionary/programs?page=" + page + "&size=" + _options.PaginationDivision);
 
         if (response == null) throw new NotFoundException("Import failed: service responded with null");

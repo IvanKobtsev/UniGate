@@ -1,10 +1,14 @@
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
+using UniGate.Common.Enums;
 using UniGate.DictionaryService.Enums;
 using UniGate.DictionaryService.Interfaces;
 
 namespace UniGate.DictionaryService.Controllers;
 
+[Authorize(Roles = "Admin")]
 [ApiController]
 [Route("api/v1/dictionary")]
 public class ManagingController(
@@ -47,9 +51,10 @@ public class ManagingController(
 
     [HttpGet("import_history")]
     [SwaggerOperation(Summary = "Get a list of all dictionary imports ever made")]
-    public async Task<IActionResult> GetImports()
+    public async Task<IActionResult> GetImports([Range(1, int.MaxValue)] [FromQuery] int currentPage = 1,
+        [Range(1, int.MaxValue)] [FromQuery] int pageSize = 10, [FromQuery] Sorting sorting = Sorting.DateDesc)
     {
-        return Ok(await importService.GetImportHistory());
+        return Ok(await importService.GetImportHistory(currentPage, pageSize, sorting));
     }
 
     // [HttpDelete("import_history/clear")]

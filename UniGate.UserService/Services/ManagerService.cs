@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Identity;
 using UniGate.Common.DTOs;
 using UniGate.Common.Enums;
 using UniGate.Common.Utilities;
+using UniGate.ServiceBus.DTOs;
+using UniGate.ServiceBus.Interfaces;
 using UniGate.UserService.DTOs.Requests;
 using UniGate.UserService.DTOs.Responses;
 using UniGate.UserService.Interfaces;
@@ -9,7 +11,11 @@ using UniGate.UserService.Models;
 
 namespace UniGate.UserService.Services;
 
-public class ManagerService(IUserService userService, IUserRepository userRepository, UserManager<User> userManager)
+public class ManagerService(
+    IUserService userService,
+    IUserRepository userRepository,
+    UserManager<User> userManager,
+    IMessagePublisher messagePublisher)
     : IManagerService
 {
     public async Task<Result<CreateManagerResponseDto>> CreateManager(RegisterUserDto registerUserDto,
@@ -37,6 +43,20 @@ public class ManagerService(IUserService userService, IUserRepository userReposi
                 Code = HttpCode.BadRequest,
                 Message = result.Errors.FirstOrDefault()?.Description
             };
+
+        var message = new MessageWrapper<UpdateManagerDto>
+        {
+            Action = "UpdateManager",
+            Data = new UpdateManagerDto
+            {
+                UserId = createdUserResult.Data.Id,
+                FullName = createdUserResult.Data.LastName + " " + createdUserResult.Data.FirstName + " " +
+                           createdUserResult.Data.Patronymic,
+                IsChief = isChief
+            }
+        };
+
+        await messagePublisher.Publish(message, "actions-with-managers");
 
         return new Result<CreateManagerResponseDto>
         {

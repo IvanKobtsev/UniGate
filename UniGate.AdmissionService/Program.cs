@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using UniGate.Common.Extensions;
+using UniGate.Common.HMAC;
 using UniGate.Common.Logging;
 using UniGate.ServiceBus.Interfaces;
 using UniGate.ServiceBus.Services;
@@ -26,9 +27,13 @@ builder.Services.AddScoped<IApplicantRepository, ApplicantRepository>();
 builder.Services.AddScoped<IApplicantService, ApplicantService>();
 builder.Services.AddScoped<IManagerService, ManagerService>();
 builder.Services.AddScoped<IManagerRepository, ManagerRepository>();
+builder.Services.AddScoped<IAdmissionRepository, AdmissionRepository>();
 builder.Services.AddScoped<IBackgroundTaskService, BackgroundTaskService>();
+builder.Services.AddScoped<HttpClient>();
+builder.Services.AddScoped<HmacHttpClient>();
 builder.Services.AddSingleton<IRabbitMqConnection, RabbitMqConnection>();
 builder.Services.AddHostedService<ApplicantMessageConsumer>();
+builder.Services.AddHostedService<ManagerMessageConsumer>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));

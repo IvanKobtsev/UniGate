@@ -1,5 +1,5 @@
 using UniGate.Common.DTOs;
-using UniGate.DictionaryService.DTOs;
+using UniGate.DictionaryService.DTOs.Dictionary;
 using UniGate.DictionaryService.Interfaces;
 using UniGate.DictionaryService.Mappers;
 
@@ -7,40 +7,33 @@ namespace UniGate.DictionaryService.Services;
 
 public class DictionaryService(IDictionaryRepository dictionaryRepository) : IDictionaryService
 {
-    public async Task<List<EducationLevelDto>> GetEducationLevels()
+    public async Task<PaginatedListDto<EducationProgramDto>> GetEducationPrograms(int currentPage, int pageSize,
+        Guid? facultyId, int? educationLevelId, string? educationForm, string? language,
+        string? programNameOrCode)
     {
-        return (await dictionaryRepository.GetEducationLevels()).ToDtos();
-    }
-
-    public async Task<List<EducationDocumentTypeDto>> GetEducationDocumentTypes()
-    {
-        var educationLevelsDictionary = await dictionaryRepository.GetEducationLevelsGuidToIntDictionary();
-
-        return (await dictionaryRepository.GetEducationDocumentTypes()).ToDtos(educationLevelsDictionary);
-    }
-
-    public async Task<List<FacultyDto>> GetFaculties()
-    {
-        return (await dictionaryRepository.GetFaculties()).ToDtos();
-    }
-
-    public async Task<EducationProgramsPagedListDto> GetEducationPrograms(int currentPage = 1, int pageSize = 10,
-        Guid? facultyId = null, int? educationLevelId = null, string? educationForm = null, string? language = null,
-        string? programSearch = null)
-    {
-        var paginatedList = await dictionaryRepository.GetPaginatedEducationPrograms(currentPage, pageSize, facultyId,
+        return (await dictionaryRepository.GetPaginatedEducationPrograms(currentPage, pageSize, facultyId,
             educationLevelId,
-            educationForm, language, programSearch);
+            educationForm, language, programNameOrCode)).ToPaginatedListDto(items => items.ToDtos());
+    }
 
-        return new EducationProgramsPagedListDto
-        {
-            Pagination = new PaginationDto
-            {
-                Count = paginatedList.PagesCount,
-                Current = paginatedList.PageIndex,
-                Size = paginatedList.PageSize
-            },
-            Programs = paginatedList.Items.ToDtos()
-        };
+    public async Task<PaginatedListDto<EducationDocumentTypeDto>> GetEducationDocumentTypes(int currentPage,
+        int pageSize,
+        string? documentTypeName)
+    {
+        return (await dictionaryRepository.GetPaginatedEducationDocumentTypes(currentPage, pageSize, documentTypeName))
+            .ToPaginatedListDto(items => items.ToDtos());
+    }
+
+    public async Task<PaginatedListDto<EducationLevelDto>> GetEducationLevels(int currentPage, int pageSize,
+        string? levelName)
+    {
+        return (await dictionaryRepository.GetPaginatedEducationLevels(currentPage, pageSize, levelName))
+            .ToPaginatedListDto(items => items.ToDtos());
+    }
+
+    public async Task<PaginatedListDto<FacultyDto>> GetFaculties(int currentPage, int pageSize, string? facultyName)
+    {
+        return (await dictionaryRepository.GetPaginatedFaculties(currentPage, pageSize, facultyName))
+            .ToPaginatedListDto(items => items.ToDtos());
     }
 }

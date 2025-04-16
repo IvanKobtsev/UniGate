@@ -1,6 +1,6 @@
 using UniGate.DictionaryService.Enums;
 
-namespace UniGate.DictionaryService.DTOs;
+namespace UniGate.DictionaryService.DTOs.Dictionary;
 
 public class ImportStateDto
 {

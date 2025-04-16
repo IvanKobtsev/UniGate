@@ -1,15 +1,19 @@
-using UniGate.DictionaryService.DTOs;
+using UniGate.Common.DTOs;
+using UniGate.DictionaryService.DTOs.Dictionary;
 
 namespace UniGate.DictionaryService.Interfaces;
 
 public interface IDictionaryService
 {
-    public Task<List<EducationLevelDto>> GetEducationLevels();
-    public Task<List<EducationDocumentTypeDto>> GetEducationDocumentTypes();
+    public Task<PaginatedListDto<EducationLevelDto>> GetEducationLevels(int currentPage, int pageSize,
+        string? levelName);
 
-    public Task<EducationProgramsPagedListDto> GetEducationPrograms(int currentPage = 1, int pageSize = 10,
-        Guid? facultyId = null, int? educationLevelId = null, string? educationForm = null, string? language = null,
-        string? programSearch = null);
+    public Task<PaginatedListDto<EducationDocumentTypeDto>> GetEducationDocumentTypes(int currentPage, int pageSize,
+        string? documentTypeName);
 
-    public Task<List<FacultyDto>> GetFaculties();
+    public Task<PaginatedListDto<EducationProgramDto>> GetEducationPrograms(int currentPage, int pageSize,
+        Guid? facultyId, int? educationLevelId, string? educationForm, string? language,
+        string? programNameOrCode);
+
+    public Task<PaginatedListDto<FacultyDto>> GetFaculties(int currentPage, int pageSize, string? facultyName);
 }

@@ -9,5 +9,5 @@ public class AdmissionFullDto
     public AdmissionStatus Status { get; set; }
     public AdmissionType AdmissionType { get; set; }
     public required ApplicantLightDto Applicant { get; set; }
-    public List<ProgramPreferenceDto> ProgramPreferences { get; set; } = [];
+    public required List<ProgramPreferenceDto> ProgramPreferences { get; set; }
 }

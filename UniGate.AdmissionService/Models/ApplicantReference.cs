@@ -8,4 +8,5 @@ public class ApplicantReference
     [MaxLength(152)] public required string FullName { get; set; }
     public List<Admission> Admissions { get; set; } = [];
     public List<DocumentReference> Documents { get; set; } = [];
+    public Guid? TypeIdOfUploadedEducationDocument { get; set; }
 }

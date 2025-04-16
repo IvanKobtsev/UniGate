@@ -26,12 +26,14 @@ public class ProgramPreferenceController(IApplicantService applicantService) : C
             .GetActionResult();
     }
 
+    [Authorize]
     [HttpPatch("{id:guid}")]
-    [SwaggerOperation(Summary = "Change the priority of an education program")]
+    [SwaggerOperation(Summary = "Change the priority of chosen education program")]
     public void ChangeProgramPriority([FromRoute] Guid id, [FromBody] ChangeProgramPriorityDto changeProgramPriorityDto)
     {
     }
 
+    [Authorize]
     [HttpDelete("{id:guid}")]
     [SwaggerOperation(Summary = "Remove education program from chosen")]
     public void DeleteProgramFromChosen([FromRoute] Guid id)

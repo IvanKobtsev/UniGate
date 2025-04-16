@@ -6,8 +6,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using UniGate.Common.Filters;
@@ -95,14 +93,9 @@ public static class ServiceExtensions
     public static IServiceCollection AddControllersWithJsonSerializers(this IServiceCollection services)
     {
         services.AddControllers().AddJsonOptions(x =>
-            {
-                x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            })
-            .AddNewtonsoftJson(x =>
-            {
-                x.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                x.SerializerSettings.Converters.Add(new StringEnumConverter());
-            });
+        {
+            x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        });
 
         return services;
     }

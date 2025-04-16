@@ -12,6 +12,6 @@ public class ProgramPreference
     [ForeignKey("AdmissionId")] public Admission Admission { get; set; }
 
     public Guid ChosenProgramId { get; set; }
-    public Guid FacultyOfChosenProgramId { get; set; }
+    public Guid FacultyIdOfChosenProgram { get; set; }
     [Range(1, int.MaxValue)] public int Priority { get; set; }
 }
